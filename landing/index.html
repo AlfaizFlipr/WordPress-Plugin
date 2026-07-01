@@ -1,0 +1,918 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>
+      Naya Setu Courier — Connect WooCommerce to Delivery in 2 Minutes
+    </title>
+    <meta
+      name="description"
+      content="Naya Setu Courier connects your WooCommerce store to Delivery. Auto-sync orders, create shipments, generate AWB, and track deliveries from one dashboard."
+    />
+    <style>
+      :root {
+        --navy: #0a2540; /* deep brand navy */
+        --blue: #1a56db; /* primary blue */
+        --blue-dark: #1442b0;
+        --saffron: #f97316; /* accent orange/saffron */
+        --green: #16a34a;
+        --gray: #64748b;
+        --line: #e5eaf1;
+        --bg: #f6f9fc;
+        --white: #fff;
+      }
+      * {
+        box-sizing: border-box;
+        margin: 0;
+        padding: 0;
+      }
+      html {
+        scroll-behavior: smooth;
+      }
+      body {
+        font-family:
+          -apple-system, "Segoe UI", Inter, Roboto, Arial, sans-serif;
+        color: var(--navy);
+        background: var(--white);
+        line-height: 1.6;
+      }
+      a {
+        text-decoration: none;
+        color: inherit;
+      }
+      .container {
+        max-width: 1180px;
+        margin: 0 auto;
+        padding: 0 24px;
+      }
+      .btn {
+        display: inline-flex;
+        align-items: center;
+        gap: 8px;
+        font-weight: 700;
+        font-size: 15px;
+        padding: 13px 24px;
+        border-radius: 10px;
+        border: 2px solid transparent;
+        cursor: pointer;
+        transition: 0.18s;
+      }
+      .btn-primary {
+        background: var(--blue);
+        color: #fff;
+      }
+      .btn-primary:hover {
+        background: var(--blue-dark);
+        transform: translateY(-1px);
+      }
+      .btn-accent {
+        background: var(--saffron);
+        color: #fff;
+      }
+      .btn-accent:hover {
+        background: #e1640b;
+        transform: translateY(-1px);
+      }
+      .btn-ghost {
+        background: #fff;
+        color: var(--navy);
+        border-color: var(--line);
+      }
+      .btn-ghost:hover {
+        border-color: var(--blue);
+        color: var(--blue);
+      }
+
+      /* Header */
+      header {
+        position: sticky;
+        top: 0;
+        z-index: 50;
+        background: rgba(255, 255, 255, 0.92);
+        backdrop-filter: blur(8px);
+        border-bottom: 1px solid var(--line);
+      }
+      .nav {
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+        height: 72px;
+      }
+      .brand {
+        display: flex;
+        align-items: center;
+        gap: 11px;
+        font-weight: 800;
+        font-size: 20px;
+        color: var(--navy);
+      }
+      .logo {
+        width: 40px;
+        height: 40px;
+        border-radius: 10px;
+        background: linear-gradient(135deg, var(--blue), var(--saffron));
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        color: #fff;
+        font-weight: 900;
+        font-size: 18px;
+      }
+      .brand small {
+        display: block;
+        font-size: 10px;
+        font-weight: 600;
+        color: var(--gray);
+        letter-spacing: 0.5px;
+        text-transform: uppercase;
+      }
+      .menu {
+        display: flex;
+        gap: 28px;
+        font-weight: 600;
+        font-size: 15px;
+        color: #334155;
+      }
+      .menu a:hover {
+        color: var(--blue);
+      }
+      .nav-cta {
+        display: flex;
+        gap: 10px;
+      }
+      .burger {
+        display: none;
+        font-size: 26px;
+        background: none;
+        border: 0;
+        cursor: pointer;
+      }
+
+      /* Hero */
+      .hero {
+        background: linear-gradient(
+          160deg,
+          #0a2540 0%,
+          #13346e 60%,
+          #1a56db 100%
+        );
+        color: #fff;
+        position: relative;
+        overflow: hidden;
+      }
+      .hero::after {
+        content: "";
+        position: absolute;
+        right: -120px;
+        top: -120px;
+        width: 480px;
+        height: 480px;
+        border-radius: 50%;
+        background: radial-gradient(
+          circle,
+          rgba(249, 115, 22, 0.35),
+          transparent 70%
+        );
+      }
+      .hero-grid {
+        display: grid;
+        grid-template-columns: 1.1fr 0.9fr;
+        gap: 48px;
+        align-items: center;
+        padding: 84px 0;
+        position: relative;
+        z-index: 2;
+      }
+      .badge-pill {
+        display: inline-flex;
+        align-items: center;
+        gap: 8px;
+        background: rgba(255, 255, 255, 0.12);
+        border: 1px solid rgba(255, 255, 255, 0.25);
+        padding: 7px 14px;
+        border-radius: 999px;
+        font-size: 13px;
+        font-weight: 600;
+        margin-bottom: 22px;
+      }
+      .hero h1 {
+        font-size: 46px;
+        line-height: 1.12;
+        font-weight: 800;
+        letter-spacing: -0.5px;
+      }
+      .hero h1 span {
+        color: #ffb87a;
+      }
+      .hero p.sub {
+        font-size: 18px;
+        color: #cfe0ff;
+        margin: 20px 0 30px;
+        max-width: 540px;
+      }
+      .hero-cta {
+        display: flex;
+        gap: 14px;
+        flex-wrap: wrap;
+      }
+      .hero-trust {
+        margin-top: 28px;
+        display: flex;
+        gap: 26px;
+        flex-wrap: wrap;
+        font-size: 13px;
+        color: #aac4f5;
+      }
+      .hero-trust b {
+        color: #fff;
+      }
+
+      /* Mock dashboard card */
+      .mock {
+        background: #fff;
+        border-radius: 16px;
+        box-shadow: 0 30px 60px rgba(2, 18, 52, 0.35);
+        overflow: hidden;
+        color: var(--navy);
+      }
+      .mock-top {
+        background: var(--navy);
+        color: #fff;
+        padding: 14px 18px;
+        display: flex;
+        align-items: center;
+        gap: 8px;
+        font-size: 13px;
+        font-weight: 600;
+      }
+      .dot {
+        width: 10px;
+        height: 10px;
+        border-radius: 50%;
+      }
+      .mock-body {
+        padding: 18px;
+      }
+      .mock-cards {
+        display: grid;
+        grid-template-columns: repeat(3, 1fr);
+        gap: 10px;
+        margin-bottom: 14px;
+      }
+      .mc {
+        border: 1px solid var(--line);
+        border-radius: 10px;
+        padding: 12px;
+      }
+      .mc .l {
+        font-size: 10px;
+        color: var(--gray);
+        text-transform: uppercase;
+        font-weight: 700;
+      }
+      .mc .v {
+        font-size: 22px;
+        font-weight: 800;
+      }
+      .mc.b1 {
+        border-left: 4px solid var(--blue);
+      }
+      .mc.b2 {
+        border-left: 4px solid var(--saffron);
+      }
+      .mc.b3 {
+        border-left: 4px solid var(--green);
+      }
+      .mrow {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        padding: 9px 4px;
+        border-bottom: 1px solid var(--line);
+        font-size: 12px;
+      }
+      .tag {
+        font-size: 10px;
+        font-weight: 700;
+        padding: 2px 8px;
+        border-radius: 999px;
+      }
+      .tag.g {
+        background: #ecfdf5;
+        color: #15803d;
+      }
+      .tag.o {
+        background: #fff7ed;
+        color: #c2410c;
+      }
+      .tag.bl {
+        background: #eff6ff;
+        color: #1d4ed8;
+      }
+
+      /* Sections */
+      section {
+        padding: 80px 0;
+      }
+      .eyebrow {
+        color: var(--saffron);
+        font-weight: 800;
+        letter-spacing: 1px;
+        text-transform: uppercase;
+        font-size: 13px;
+        text-align: center;
+      }
+      h2.title {
+        font-size: 34px;
+        font-weight: 800;
+        text-align: center;
+        margin: 10px 0 14px;
+        letter-spacing: -0.4px;
+      }
+      .lead {
+        text-align: center;
+        color: var(--gray);
+        max-width: 620px;
+        margin: 0 auto 50px;
+        font-size: 17px;
+      }
+
+      .features {
+        display: grid;
+        grid-template-columns: repeat(3, 1fr);
+        gap: 22px;
+      }
+      .feature {
+        background: #fff;
+        border: 1px solid var(--line);
+        border-radius: 14px;
+        padding: 28px;
+        transition: 0.18s;
+      }
+      .feature:hover {
+        box-shadow: 0 14px 34px rgba(10, 37, 64, 0.1);
+        transform: translateY(-3px);
+        border-color: #cfe0ff;
+      }
+      .ficon {
+        width: 50px;
+        height: 50px;
+        border-radius: 12px;
+        background: #eef4ff;
+        color: var(--blue);
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        font-size: 24px;
+        margin-bottom: 16px;
+      }
+      .feature h3 {
+        font-size: 18px;
+        margin-bottom: 8px;
+      }
+      .feature p {
+        color: var(--gray);
+        font-size: 14.5px;
+      }
+
+      .steps {
+        display: grid;
+        grid-template-columns: repeat(4, 1fr);
+        gap: 20px;
+        counter-reset: step;
+      }
+      .step {
+        text-align: center;
+        position: relative;
+        padding: 0 8px;
+      }
+      .step .num {
+        counter-increment: step;
+        width: 56px;
+        height: 56px;
+        border-radius: 50%;
+        background: linear-gradient(135deg, var(--blue), var(--saffron));
+        color: #fff;
+        font-weight: 800;
+        font-size: 22px;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        margin: 0 auto 16px;
+      }
+      .step .num::before {
+        content: counter(step);
+      }
+      .step h4 {
+        font-size: 17px;
+        margin-bottom: 6px;
+      }
+      .step p {
+        color: var(--gray);
+        font-size: 14px;
+      }
+
+      .stats {
+        background: var(--navy);
+        color: #fff;
+      }
+      .stats .grid {
+        display: grid;
+        grid-template-columns: repeat(4, 1fr);
+        gap: 24px;
+        text-align: center;
+      }
+      .stat .n {
+        font-size: 42px;
+        font-weight: 800;
+        color: #ffb87a;
+      }
+      .stat .t {
+        color: #aac4f5;
+        font-size: 14px;
+        margin-top: 4px;
+      }
+
+      .pricing {
+        display: grid;
+        grid-template-columns: repeat(3, 1fr);
+        gap: 22px;
+        align-items: stretch;
+      }
+      .plan {
+        background: #fff;
+        border: 1px solid var(--line);
+        border-radius: 16px;
+        padding: 32px;
+        display: flex;
+        flex-direction: column;
+      }
+      .plan.featured {
+        border: 2px solid var(--blue);
+        box-shadow: 0 18px 40px rgba(26, 86, 219, 0.16);
+        position: relative;
+      }
+      .plan.featured::before {
+        content: "Most Popular";
+        position: absolute;
+        top: -13px;
+        left: 50%;
+        transform: translateX(-50%);
+        background: var(--saffron);
+        color: #fff;
+        font-size: 12px;
+        font-weight: 700;
+        padding: 5px 14px;
+        border-radius: 999px;
+      }
+      .plan h3 {
+        font-size: 20px;
+      }
+      .price {
+        font-size: 40px;
+        font-weight: 800;
+        margin: 12px 0;
+      }
+      .price small {
+        font-size: 15px;
+        color: var(--gray);
+        font-weight: 600;
+      }
+      .plan ul {
+        list-style: none;
+        margin: 18px 0 24px;
+        flex: 1;
+      }
+      .plan li {
+        padding: 8px 0;
+        border-bottom: 1px solid var(--line);
+        font-size: 14.5px;
+        color: #334155;
+      }
+      .plan li::before {
+        content: "✔";
+        color: var(--green);
+        font-weight: 900;
+        margin-right: 9px;
+      }
+
+      .cta-band {
+        background: linear-gradient(135deg, var(--blue), var(--navy));
+        color: #fff;
+        border-radius: 20px;
+        padding: 54px;
+        text-align: center;
+      }
+      .cta-band h2 {
+        font-size: 32px;
+        font-weight: 800;
+        margin-bottom: 12px;
+      }
+      .cta-band p {
+        color: #cfe0ff;
+        margin-bottom: 26px;
+        font-size: 17px;
+      }
+
+      footer {
+        background: var(--navy);
+        color: #9fb3d1;
+        padding: 54px 0 26px;
+      }
+      .fgrid {
+        display: grid;
+        grid-template-columns: 2fr 1fr 1fr 1fr;
+        gap: 30px;
+        margin-bottom: 34px;
+      }
+      footer h5 {
+        color: #fff;
+        font-size: 15px;
+        margin-bottom: 14px;
+      }
+      footer a {
+        display: block;
+        padding: 5px 0;
+        font-size: 14px;
+      }
+      footer a:hover {
+        color: #fff;
+      }
+      .fbar {
+        border-top: 1px solid rgba(255, 255, 255, 0.1);
+        padding-top: 20px;
+        font-size: 13px;
+        display: flex;
+        justify-content: space-between;
+        flex-wrap: wrap;
+        gap: 10px;
+      }
+
+      @media (max-width: 900px) {
+        .hero-grid,
+        .features,
+        .steps,
+        .pricing,
+        .stats .grid,
+        .fgrid {
+          grid-template-columns: 1fr;
+        }
+        .menu,
+        .nav-cta {
+          display: none;
+        }
+        .burger {
+          display: block;
+        }
+        .hero h1 {
+          font-size: 34px;
+        }
+        .features,
+        .pricing {
+          gap: 16px;
+        }
+      }
+    </style>
+  </head>
+  <body>
+    <!-- HEADER -->
+    <header>
+      <div class="container nav">
+        <a class="brand" href="#">
+          <span class="logo">NS</span>
+          <span
+            >Naya Setu Courier<small
+              >Digital • Government • Courier</small
+            ></span
+          >
+        </a>
+        <nav class="menu">
+          <a href="#features">Features</a>
+          <a href="#how">How It Works</a>
+          <a href="#pricing">Pricing</a>
+          <a href="#contact">Contact</a>
+        </nav>
+        <div class="nav-cta">
+          <a class="btn btn-ghost" href="/wp-admin/">Login</a>
+          <a class="btn btn-primary" href="#connect">Connect Store</a>
+        </div>
+        <button
+          class="burger"
+          onclick="
+            document.querySelector('.menu').style.display = 'flex';
+            this.style.display = 'none';
+          "
+        >
+          ☰
+        </button>
+      </div>
+    </header>
+
+    <!-- HERO -->
+    <section class="hero" style="padding: 0">
+      <div class="container hero-grid">
+        <div>
+          <span class="badge-pill"
+            >🚚 WooCommerce → Delivery, fully automated</span
+          >
+          <h1>
+            Connect Your WooCommerce Store to Delivery in
+            <span>Under 2 Minutes</span>
+          </h1>
+          <p class="sub">
+            Naya Setu Courier auto-syncs your orders, creates Delivery
+            shipments in one click, generates AWB numbers, and tracks every
+            delivery — across all your stores, from one powerful dashboard.
+          </p>
+          <div class="hero-cta">
+            <a class="btn btn-accent" href="#connect"
+              >Start Free — Connect Store</a
+            >
+            <a
+              class="btn btn-ghost"
+              href="#how"
+              style="
+                background: transparent;
+                color: #fff;
+                border-color: rgba(255, 255, 255, 0.4);
+              "
+              >See How It Works</a
+            >
+          </div>
+          <div class="hero-trust">
+            <span><b>One-click</b> shipment creation</span>
+            <span><b>Real-time</b> tracking sync</span>
+            <span><b>Unlimited</b> stores</span>
+          </div>
+        </div>
+
+        <!-- Mock dashboard -->
+        <div class="mock">
+          <div class="mock-top">
+            <span class="dot" style="background: #ff5f57"></span>
+            <span class="dot" style="background: #febc2e"></span>
+            <span class="dot" style="background: #28c840"></span>
+            &nbsp; Naya Setu Courier — Dashboard
+          </div>
+          <div class="mock-body">
+            <div class="mock-cards">
+              <div class="mc b1">
+                <div class="l">Total</div>
+                <div class="v">1,248</div>
+              </div>
+              <div class="mc b2">
+                <div class="l">Pending</div>
+                <div class="v">36</div>
+              </div>
+              <div class="mc b3">
+                <div class="l">Delivered</div>
+                <div class="v">982</div>
+              </div>
+            </div>
+            <div class="mrow">
+              <span>#1056 · Fashion Store</span
+              ><span class="tag o">Pending</span>
+            </div>
+            <div class="mrow">
+              <span>#1055 · Gadget Hub</span
+              ><span class="tag bl">In Transit</span>
+            </div>
+            <div class="mrow">
+              <span>#1054 · Home Decor</span
+              ><span class="tag g">Delivered</span>
+            </div>
+            <div class="mrow" style="border: 0">
+              <span>#1053 · Fashion Store</span
+              ><span class="tag g">Delivered</span>
+            </div>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- FEATURES -->
+    <section id="features">
+      <div class="container">
+        <div class="eyebrow">Everything You Need</div>
+        <h2 class="title">Built for fast, reliable shipping</h2>
+        <p class="lead">
+          A complete logistics control panel that plugs into your existing
+          WooCommerce stores and Delivery account.
+        </p>
+        <div class="features">
+          <div class="feature">
+            <div class="ficon">🔄</div>
+            <h3>Automatic Order Sync</h3>
+            <p>
+              New orders flow into your dashboard the moment a customer checks
+              out — no manual imports, ever.
+            </p>
+          </div>
+          <div class="feature">
+            <div class="ficon">📦</div>
+            <h3>One-Click Shipments</h3>
+            <p>
+              Push any order to Delivery and instantly generate an AWB.
+              Bulk-book hundreds at once.
+            </p>
+          </div>
+          <div class="feature">
+            <div class="ficon">📍</div>
+            <h3>Real-Time Tracking</h3>
+            <p>
+              Status updates sync back to your store and your dashboard
+              automatically every 15 minutes.
+            </p>
+          </div>
+          <div class="feature">
+            <div class="ficon">🖨️</div>
+            <h3>Bulk Label Printing</h3>
+            <p>
+              Download and print Delivery shipping labels and packing slips in
+              a single click.
+            </p>
+          </div>
+          <div class="feature">
+            <div class="ficon">🏬</div>
+            <h3>Multi-Store Management</h3>
+            <p>
+              Connect unlimited WooCommerce stores and manage all their
+              shipments from one place.
+            </p>
+          </div>
+          <div class="feature">
+            <div class="ficon">📊</div>
+            <h3>Live Stats & Reports</h3>
+            <p>
+              Total, Pending, Booked, In-Transit and Delivered — at a glance, in
+              real time.
+            </p>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- HOW IT WORKS -->
+    <section id="how" style="background: var(--bg)">
+      <div class="container">
+        <div class="eyebrow">Simple Setup</div>
+        <h2 class="title">Live in 4 easy steps</h2>
+        <p class="lead">From install to your first shipment in minutes.</p>
+        <div class="steps">
+          <div class="step">
+            <div class="num"></div>
+            <h4>Install Plugin</h4>
+            <p>Upload the Naya Setu connector to your WooCommerce store.</p>
+          </div>
+          <div class="step">
+            <div class="num"></div>
+            <h4>Connect Store</h4>
+            <p>
+              Enter your dashboard URL and connect — the API key is set up
+              automatically.
+            </p>
+          </div>
+          <div class="step">
+            <div class="num"></div>
+            <h4>Sync Orders</h4>
+            <p>
+              Orders import automatically, plus a bulk-sync for past orders.
+            </p>
+          </div>
+          <div class="step">
+            <div class="num"></div>
+            <h4>Ship & Track</h4>
+            <p>
+              Push to Delivery, print labels, and track — AWB syncs back to
+              your store.
+            </p>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- STATS -->
+    <section class="stats">
+      <div class="container grid">
+        <div class="stat">
+          <div class="n">2 min</div>
+          <div class="t">Average setup time</div>
+        </div>
+        <div class="stat">
+          <div class="n">∞</div>
+          <div class="t">Stores supported</div>
+        </div>
+        <div class="stat">
+          <div class="n">15 min</div>
+          <div class="t">Tracking refresh</div>
+        </div>
+        <div class="stat">
+          <div class="n">1-click</div>
+          <div class="t">Shipment booking</div>
+        </div>
+      </div>
+    </section>
+
+    <!-- PRICING -->
+    <section id="pricing">
+      <div class="container">
+        <div class="eyebrow">Pricing</div>
+        <h2 class="title">Plans that scale with you</h2>
+        <p class="lead">Start free. Upgrade as your shipping volume grows.</p>
+        <div class="pricing">
+          <div class="plan">
+            <h3>Starter</h3>
+            <div class="price">₹0<small>/mo</small></div>
+            <ul>
+              <li>1 connected store</li>
+              <li>Up to 100 shipments/mo</li>
+              <li>Delivery integration</li>
+              <li>Tracking sync</li>
+              <li>Email support</li>
+            </ul>
+            <a class="btn btn-ghost" href="#connect">Get Started</a>
+          </div>
+          <div class="plan featured">
+            <h3>Growth</h3>
+            <div class="price">₹1,499<small>/mo</small></div>
+            <ul>
+              <li>Up to 5 stores</li>
+              <li>Unlimited shipments</li>
+              <li>Bulk label printing</li>
+              <li>Priority tracking</li>
+              <li>Priority support</li>
+            </ul>
+            <a class="btn btn-primary" href="#connect">Choose Growth</a>
+          </div>
+          <div class="plan">
+            <h3>Enterprise</h3>
+            <div class="price">Custom</div>
+            <ul>
+              <li>Unlimited stores</li>
+              <li>Multi-courier (coming)</li>
+              <li>Wallet & billing</li>
+              <li>Dedicated manager</li>
+              <li>SLA support</li>
+            </ul>
+            <a class="btn btn-ghost" href="#contact">Contact Sales</a>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- CTA -->
+    <section id="connect">
+      <div class="container">
+        <div class="cta-band">
+          <h2>Ready to ship smarter?</h2>
+          <p>
+            Connect your WooCommerce store to Delivery with Naya Setu Courier
+            today.
+          </p>
+          <a class="btn btn-accent" href="/wp-admin/admin.php?page=ccc-settings"
+            >Connect Your Store Now</a
+          >
+        </div>
+      </div>
+    </section>
+
+    <!-- FOOTER -->
+    <footer id="contact">
+      <div class="container">
+        <div class="fgrid">
+          <div>
+            <div class="brand" style="color: #fff; margin-bottom: 12px">
+              <span class="logo">NS</span
+              ><span style="color: #fff">Naya Setu Courier</span>
+            </div>
+            <p style="font-size: 14px; max-width: 300px">
+              Complete Digital, Government &amp; Courier Solutions — All in One
+              Place. Powering WooCommerce + Delivery logistics for Indian
+              sellers.
+            </p>
+          </div>
+          <div>
+            <h5>Product</h5>
+            <a href="#features">Features</a><a href="#how">How It Works</a
+            ><a href="#pricing">Pricing</a>
+          </div>
+          <div>
+            <h5>Company</h5>
+            <a href="https://nayasetu.in/" target="_blank">About Naya Setu</a
+            ><a href="#">Our Team</a><a href="#contact">Contact</a>
+          </div>
+          <div>
+            <h5>Get Started</h5>
+            <a href="/wp-admin/">Login</a><a href="#connect">Connect Store</a
+            ><a href="#">Documentation</a>
+          </div>
+        </div>
+        <div class="fbar">
+          <span>© 2026 Naya Setu. All rights reserved.</span>
+          <span>Made for WooCommerce + Delivery</span>
+        </div>
+      </div>
+    </footer>
+  </body>
+</html>

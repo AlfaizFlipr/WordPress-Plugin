@@ -1,0 +1,34 @@
+{
+  "permissions": {
+    "allow": [
+      "PowerShell($p = Get-Command php -ErrorAction SilentlyContinue; if \\($p\\) { $p.Source } else { \"NO_PHP\" })",
+      "WebFetch(domain:nayasetu.in)",
+      "PowerShell($base = \"c:\\\\Users\\\\LENOVO\\\\Music\\\\plugin\"; $dist = Join-Path $base \"dist\"; New-Item -ItemType Directory -Force -Path $dist | Out-Null; Compress-Archive -Path \\(Join-Path $base \"courier-connector\"\\) -DestinationPath \\(Join-Path $dist \"naya-setu-courier-dashboard.zip\"\\) -Force; Compress-Archive -Path \\(Join-Path $base \"courier-connector-client\"\\) -DestinationPath \\(Join-Path $dist \"naya-setu-courier-connector.zip\"\\) -Force; Get-ChildItem $dist | Select-Object Name,@{n='SizeKB';e={[math]::Round\\($_.Length/1KB,1\\)}} | Format-Table -AutoSize)",
+      "PowerShell(Add-Type -AssemblyName System.IO.Compression.FileSystem; $z=[System.IO.Compression.ZipFile]::OpenRead\\(\"c:\\\\Users\\\\LENOVO\\\\Music\\\\plugin\\\\dist\\\\naya-setu-courier-dashboard.zip\"\\); $z.Entries | Select-Object -First 6 -ExpandProperty FullName; $z.Dispose\\(\\))",
+      "PowerShell(Add-Type -AssemblyName System.IO.Compression.FileSystem; $z=[System.IO.Compression.ZipFile]::OpenRead\\(\"c:\\\\Users\\\\LENOVO\\\\Music\\\\plugin\\\\dist\\\\naya-setu-courier-dashboard.zip\"\\); $z.Entries | Where-Object {$_.FullName -match 'landing|public'} | Select-Object -ExpandProperty FullName; $z.Dispose\\(\\))",
+      "PowerShell($base=\"c:\\\\Users\\\\LENOVO\\\\Music\\\\plugin\"; Compress-Archive -Path \\(Join-Path $base \"courier-connector\"\\) -DestinationPath \\(Join-Path $base \"dist\\\\naya-setu-courier-dashboard.zip\"\\) -Force; Add-Type -AssemblyName System.IO.Compression.FileSystem; $z=[System.IO.Compression.ZipFile]::OpenRead\\(\"$base\\\\dist\\\\naya-setu-courier-dashboard.zip\"\\); $z.Entries | Where-Object {$_.FullName -match 'portal|clients'} | Select-Object -ExpandProperty FullName; \"---\"; \"Total entries: \" + $z.Entries.Count; $z.Dispose\\(\\))",
+      "Bash(ls \"C:\\\\xampp\\\\htdocs\" 2>/dev/null)",
+      "Read(//c/xampp/htdocs/**)",
+      "Bash(\"C:\\\\xampp\\\\mysql\\\\bin\\\\mysql.exe\" -u root -e \"SHOW DATABASES;\")",
+      "Bash('C:\\\\xampp\\\\php\\\\php.exe' -r ' *)",
+      "Bash(\"C:\\\\xampp\\\\mysql\\\\bin\\\\mysql.exe\" -u root -e \"SELECT * FROM meezab.wp_woocommerce_shipping_zones;\")",
+      "Bash(curl -s --max-time 15 https://track.delhivery.com/api/p/edit -H 'Authorization: Token e9b5e002c225a871f523cb9918d6875d276d07a0' -H 'Accept: application/json')",
+      "Bash('C:\\\\xampp\\\\php\\\\php.exe' 'C:\\\\xampp\\\\php\\\\wp-cli.phar' eval '--path=C:\\\\xampp\\\\htdocs\\\\Meezab' --allow-root ' *)",
+      "Bash(curl -v --max-time 15 http://localhost/courier-dashboard/?rest_route=/courier/v1/ping -H 'X-CC-Api-Key: cc_H6a3icgi126rvrIikmGu0LiKH1W7UXvFtUylbW9u')",
+      "Bash(curl -s --max-time 30 http://localhost/courier-dashboard/?rest_route=/courier/v1/ping -H 'X-CC-Api-Key: cc_H6a3icgi126rvrIikmGu0LiKH1W7UXvFtUylbW9u')",
+      "Bash('C:\\\\xampp\\\\mysql\\\\bin\\\\mysql.exe' -u root -e ' *)",
+      "Bash(curl -s --max-time 30 -X POST http://localhost/courier-dashboard/?rest_route=/courier/v1/orders -H 'Content-Type: application/json' -H 'X-CC-Api-Key: cc_H6a3icgi126rvrIikmGu0LiKH1W7UXvFtUylbW9u' -d '{ *)",
+      "Bash('C:\\\\xampp\\\\php\\\\php.exe' 'C:\\\\xampp\\\\php\\\\wp-cli.phar' eval '--path=C:\\\\xampp\\\\htdocs\\\\courier-dashboard' --allow-root ' *)",
+      "Bash(curl -s --max-time 15 https://track.delhivery.com/api/backend/clientwarehouse/get/ -H 'Authorization: Token e9b5e002c225a871f523cb9918d6875d276d07a0' -H 'Accept: application/json')",
+      "Bash(curl -s --max-time 30 -X POST http://localhost/meezab/?rest_route=/courier/v1/update-awb -H 'Content-Type: application/json' -H 'X-CC-Api-Key: cc_H6a3icgi126rvrIikmGu0LiKH1W7UXvFtUylbW9u' -d '{ *)",
+      "Bash('C:\\\\xampp\\\\mysql\\\\bin\\\\mysql.exe' -u root ns_courier -e ' *)",
+      "Bash(echo \"Updated callback URL: $?\")",
+      "Bash(curl -s -w \"\\\\nHTTP_CODE:%{http_code}\" --max-time 60 \"http://localhost/meezab/wp-login.php\")",
+      "Bash(curl -s -w \"\\\\nHTTP_CODE:%{http_code}\" --max-time 60 \"http://localhost/meezab/\")",
+      "Bash(curl -s -w \"\\\\nHTTP_CODE:%{http_code}\" --max-time 30 \"http://localhost/meezab/wp-json/\")",
+      "Bash(echo \"Deployed 8 files\")",
+      "Bash(powershell -Command \"Remove-Item -Force 'dist\\\\naya-setu-courier-dashboard.zip' -ErrorAction SilentlyContinue; Compress-Archive -Path 'courier-connector\\\\*' -DestinationPath 'dist\\\\naya-setu-courier-dashboard.zip' -Force; Write-Host \\(\\(Get-Item 'dist\\\\naya-setu-courier-dashboard.zip'\\).Length\\)\")",
+      "PowerShell(& \"C:\\\\xampp\\\\mysql\\\\bin\\\\mysql.exe\" -uroot -e \"SELECT ID, post_title, post_name, post_status, post_content FROM ns_courier.wp_posts WHERE post_type='page' AND post_status='publish';\")"
+    ]
+  }
+}
