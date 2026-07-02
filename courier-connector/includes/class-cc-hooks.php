@@ -1,98 +1,75 @@
 <?php
-/**
- * WooCommerce hooks — auto-detect new/updated orders on the local store and
- * tag them with a default pending shipment status so they appear in the
- * courier dashboard immediately.
- *
- * @package CourierConnector
- */
 
-if ( ! defined( 'ABSPATH' ) ) {
+if (!defined('ABSPATH')) {
 	exit;
 }
 
-class CC_Hooks {
+class CC_Hooks
+{
 
-	public function register() {
-		add_action( 'woocommerce_new_order', array( $this, 'on_new_order' ), 10, 1 );
-		add_action( 'woocommerce_order_status_changed', array( $this, 'on_status_changed' ), 10, 4 );
+	public function register()
+	{
+		add_action('woocommerce_new_order', array($this, 'on_new_order'), 10, 1);
+		add_action('woocommerce_order_status_changed', array($this, 'on_status_changed'), 10, 4);
 
-		// Show courier info on the WooCommerce order edit screen.
-		add_action( 'add_meta_boxes', array( $this, 'add_meta_box' ) );
+		add_action('add_meta_boxes', array($this, 'add_meta_box'));
 	}
 
-	/**
-	 * Tag a freshly created order as pending shipment.
-	 *
-	 * @param int $order_id Order id.
-	 */
-	public function on_new_order( $order_id ) {
-		$order = wc_get_order( $order_id );
-		if ( ! $order ) {
+	public function on_new_order($order_id)
+	{
+		$order = wc_get_order($order_id);
+		if (!$order) {
 			return;
 		}
-		if ( '' === (string) $order->get_meta( '_cc_ship_status' ) ) {
-			$order->update_meta_data( '_cc_ship_status', 'pending' );
+		if ('' === (string) $order->get_meta('_cc_ship_status')) {
+			$order->update_meta_data('_cc_ship_status', 'pending');
 			$order->save();
 		}
 	}
 
-	/**
-	 * Keep shipment status sane when an order is cancelled.
-	 *
-	 * @param int      $order_id Order id.
-	 * @param string   $from     Old status.
-	 * @param string   $to       New status.
-	 * @param WC_Order $order    Order.
-	 */
-	public function on_status_changed( $order_id, $from, $to, $order ) {
-		if ( 'cancelled' === $to ) {
-			$cc = new CC_Order( $order );
-			if ( $cc->valid() && 'cancelled' !== $cc->get_ship_status() && '' === $cc->get_awb() ) {
-				$cc->set_courier_data( array( 'ship_status' => 'cancelled' ) );
+	public function on_status_changed($order_id, $from, $to, $order)
+	{
+		if ('cancelled' === $to) {
+			$cc = new CC_Order($order);
+			if ($cc->valid() && 'cancelled' !== $cc->get_ship_status() && '' === $cc->get_awb()) {
+				$cc->set_courier_data(array('ship_status' => 'cancelled'));
 			}
 		}
 	}
 
-	/**
-	 * Courier meta box on the order edit page.
-	 */
-	public function add_meta_box() {
-		$screen = class_exists( '\Automattic\WooCommerce\Internal\DataStores\Orders\CustomOrdersTableController' ) && wc_get_container()->get( \Automattic\WooCommerce\Internal\DataStores\Orders\CustomOrdersTableController::class )->custom_orders_table_usage_is_enabled()
-			? wc_get_page_screen_id( 'shop-order' )
+	public function add_meta_box()
+	{
+		$screen = class_exists('\Automattic\WooCommerce\Internal\DataStores\Orders\CustomOrdersTableController') && wc_get_container()->get(\Automattic\WooCommerce\Internal\DataStores\Orders\CustomOrdersTableController::class)->custom_orders_table_usage_is_enabled()
+			? wc_get_page_screen_id('shop-order')
 			: 'shop_order';
 
 		add_meta_box(
 			'cc_courier_box',
 			'Courier / Delhivery',
-			array( $this, 'render_meta_box' ),
+			array($this, 'render_meta_box'),
 			$screen,
 			'side',
 			'high'
 		);
 	}
 
-	/**
-	 * Render the order-edit meta box.
-	 *
-	 * @param mixed $post_or_order Post or order object.
-	 */
-	public function render_meta_box( $post_or_order ) {
+	public function render_meta_box($post_or_order)
+	{
 		$order_id = $post_or_order instanceof WP_Post ? $post_or_order->ID : $post_or_order->get_id();
-		$cc       = new CC_Order( $order_id );
-		if ( ! $cc->valid() ) {
+		$cc = new CC_Order($order_id);
+		if (!$cc->valid()) {
 			return;
 		}
 		$awb = $cc->get_awb();
 		echo '<div class="cc-meta-box">';
-		echo '<p><strong>Status:</strong> ' . esc_html( $cc->get_ship_status_label() ) . '</p>';
-		if ( $awb ) {
-			echo '<p><strong>AWB:</strong> ' . esc_html( $awb ) . '</p>';
-			echo '<p><a href="' . esc_url( $cc->get_tracking_url() ) . '" target="_blank" class="button">Track</a></p>';
+		echo '<p><strong>Status:</strong> ' . esc_html($cc->get_ship_status_label()) . '</p>';
+		if ($awb) {
+			echo '<p><strong>AWB:</strong> ' . esc_html($awb) . '</p>';
+			echo '<p><a href="' . esc_url($cc->get_tracking_url()) . '" target="_blank" class="button">Track</a></p>';
 		} else {
-			$url = admin_url( 'admin.php?page=cc-orders&cc_view=' . $order_id );
+			$url = admin_url('admin.php?page=cc-orders&cc_view=' . $order_id);
 			echo '<p>No shipment yet.</p>';
-			echo '<p><a href="' . esc_url( $url ) . '" class="button button-primary">Open in Courier Dashboard</a></p>';
+			echo '<p><a href="' . esc_url($url) . '" class="button button-primary">Open in Courier Dashboard</a></p>';
 		}
 		echo '</div>';
 	}

@@ -1,64 +1,162 @@
-/* Naya Setu Courier — front-end Client Portal styling
- * Layers on top of admin.css (which provides the .cc-* dashboard components).
- */
-
-.ns-portal{
-  --navy:#0A2540; --blue:#1A56DB; --saffron:#F97316; --line:#E5EAF1; --bg:#F6F9FC;
-  font-family:-apple-system,"Segoe UI",Inter,Roboto,Arial,sans-serif;
-  background:var(--bg); border-radius:16px; padding:0 0 24px; color:var(--navy);
+.ns-portal {
+  --navy: #0a2540;
+  --blue: #1a56db;
+  --saffron: #f97316;
+  --line: #e5eaf1;
+  --bg: #f6f9fc;
+  font-family: -apple-system, "Segoe UI", Inter, Roboto, Arial, sans-serif;
+  background: var(--bg);
+  border-radius: 16px;
+  padding: 0 0 24px;
+  color: var(--navy);
 }
 
-/* Make the embedded .cc-wrap breathe inside the page */
-.ns-portal .cc-wrap{ max-width:100%; padding:0 24px; }
+.ns-portal .cc-wrap {
+  max-width: 100%;
+  padding: 0 24px;
+}
 
-/* Top brand bar */
-.ns-portal-bar{
-  display:flex; align-items:center; justify-content:space-between; gap:12px; flex-wrap:wrap;
-  background:linear-gradient(135deg,var(--navy),var(--blue));
-  color:#fff; padding:18px 24px; border-radius:16px 16px 0 0; margin-bottom:22px;
+.ns-portal-bar {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+  flex-wrap: wrap;
+  background: linear-gradient(135deg, var(--navy), var(--blue));
+  color: #fff;
+  padding: 18px 24px;
+  border-radius: 16px 16px 0 0;
+  margin-bottom: 22px;
 }
-.ns-portal-brand{ display:flex; align-items:center; gap:12px; }
-.ns-portal-brand strong{ display:block; font-size:17px; line-height:1.1; }
-.ns-portal-brand small{ font-size:12px; color:#cfe0ff; }
-.ns-logo{
-  width:42px; height:42px; border-radius:11px; flex:none;
-  background:linear-gradient(135deg,var(--blue),var(--saffron));
-  display:flex; align-items:center; justify-content:center; color:#fff; font-weight:900; font-size:17px;
-  box-shadow:0 4px 12px rgba(0,0,0,.2);
+.ns-portal-brand {
+  display: flex;
+  align-items: center;
+  gap: 12px;
 }
-.ns-portal-user{ display:flex; align-items:center; gap:12px; font-size:14px; }
-.ns-portal-user .cc-btn{ background:rgba(255,255,255,.15); color:#fff; border-color:rgba(255,255,255,.35); }
-.ns-portal-user .cc-btn:hover{ background:rgba(255,255,255,.28); }
+.ns-portal-brand strong {
+  display: block;
+  font-size: 17px;
+  line-height: 1.1;
+}
+.ns-portal-brand small {
+  font-size: 12px;
+  color: #cfe0ff;
+}
+.ns-logo {
+  width: 42px;
+  height: 42px;
+  border-radius: 11px;
+  flex: none;
+  background: linear-gradient(135deg, var(--blue), var(--saffron));
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  color: #fff;
+  font-weight: 900;
+  font-size: 17px;
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.2);
+}
+.ns-portal-user {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  font-size: 14px;
+}
+.ns-portal-user .cc-btn {
+  background: rgba(255, 255, 255, 0.15);
+  color: #fff;
+  border-color: rgba(255, 255, 255, 0.35);
+}
+.ns-portal-user .cc-btn:hover {
+  background: rgba(255, 255, 255, 0.28);
+}
 
-/* Login screen */
-.ns-login-screen{
-  min-height:520px; display:flex; align-items:center; justify-content:center;
-  background:linear-gradient(160deg,#0A2540 0%,#13346e 60%,#1A56DB 100%);
-  border-radius:16px; padding:40px 16px;
+.ns-login-screen {
+  min-height: 520px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background: linear-gradient(160deg, #0a2540 0%, #13346e 60%, #1a56db 100%);
+  border-radius: 16px;
+  padding: 40px 16px;
 }
-.ns-login-card{
-  background:#fff; width:100%; max-width:400px; border-radius:18px; padding:34px;
-  box-shadow:0 30px 70px rgba(2,18,52,.45);
+.ns-login-card {
+  background: #fff;
+  width: 100%;
+  max-width: 400px;
+  border-radius: 18px;
+  padding: 34px;
+  box-shadow: 0 30px 70px rgba(2, 18, 52, 0.45);
 }
-.ns-login-head{ text-align:center; margin-bottom:22px; }
-.ns-login-head h2{ margin:14px 0 4px; font-size:22px; color:var(--navy); }
-.ns-login-head p{ color:#64748B; font-size:14px; margin:0; }
-.ns-logo-lg{ width:60px; height:60px; font-size:24px; border-radius:16px; margin:0 auto; }
+.ns-login-head {
+  text-align: center;
+  margin-bottom: 22px;
+}
+.ns-login-head h2 {
+  margin: 14px 0 4px;
+  font-size: 22px;
+  color: var(--navy);
+}
+.ns-login-head p {
+  color: #64748b;
+  font-size: 14px;
+  margin: 0;
+}
+.ns-logo-lg {
+  width: 60px;
+  height: 60px;
+  font-size: 24px;
+  border-radius: 16px;
+  margin: 0 auto;
+}
 
 .ns-login-card .login-username,
-.ns-login-card .login-password{ margin-bottom:14px; }
-.ns-login-card label{ display:block; font-size:13px; font-weight:600; color:#334155; margin-bottom:6px; }
-.ns-login-card input[type=text],
-.ns-login-card input[type=password]{
-  width:100%; border:1px solid var(--line); border-radius:9px; padding:11px 12px; font-size:14px;
+.ns-login-card .login-password {
+  margin-bottom: 14px;
 }
-.ns-login-card .login-remember{ font-size:13px; color:#64748B; margin-bottom:14px; }
+.ns-login-card label {
+  display: block;
+  font-size: 13px;
+  font-weight: 600;
+  color: #334155;
+  margin-bottom: 6px;
+}
+.ns-login-card input[type="text"],
+.ns-login-card input[type="password"] {
+  width: 100%;
+  border: 1px solid var(--line);
+  border-radius: 9px;
+  padding: 11px 12px;
+  font-size: 14px;
+}
+.ns-login-card .login-remember {
+  font-size: 13px;
+  color: #64748b;
+  margin-bottom: 14px;
+}
 .ns-login-card .button,
-.ns-login-card #wp-submit{
-  width:100%; background:var(--blue); border:0; color:#fff; font-weight:700; font-size:15px;
-  padding:12px; border-radius:10px; cursor:pointer; transition:.18s;
+.ns-login-card #wp-submit {
+  width: 100%;
+  background: var(--blue);
+  border: 0;
+  color: #fff;
+  font-weight: 700;
+  font-size: 15px;
+  padding: 12px;
+  border-radius: 10px;
+  cursor: pointer;
+  transition: 0.18s;
 }
 .ns-login-card .button:hover,
-.ns-login-card #wp-submit:hover{ background:#1442b0; }
-.ns-login-foot{ text-align:center; margin-top:16px; font-size:13px; }
-.ns-login-foot a{ color:var(--blue); text-decoration:none; }
+.ns-login-card #wp-submit:hover {
+  background: #1442b0;
+}
+.ns-login-foot {
+  text-align: center;
+  margin-top: 16px;
+  font-size: 13px;
+}
+.ns-login-foot a {
+  color: var(--blue);
+  text-decoration: none;
+}

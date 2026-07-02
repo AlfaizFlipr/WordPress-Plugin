@@ -1,56 +1,45 @@
 <?php
-/**
- * Installer — creates custom tables for connected websites and API logs,
- * and seeds default settings.
- *
- * @package CourierConnector
- */
 
-if ( ! defined( 'ABSPATH' ) ) {
+if (!defined('ABSPATH')) {
 	exit;
 }
 
-class CC_Install {
+class CC_Install
+{
 
-	/**
-	 * Run the full install routine.
-	 */
-	public static function run() {
+	public static function run()
+	{
 		self::create_tables();
 		self::seed_settings();
 		self::register_role();
-		update_option( 'cc_db_version', CC_DB_VERSION );
+		update_option('cc_db_version', CC_DB_VERSION);
 	}
 
-	/**
-	 * Register the Naya Setu client role used for the front-end client portal.
-	 */
-	public static function register_role() {
+	public static function register_role()
+	{
 		add_role(
 			'ns_client',
 			'Naya Setu Client',
 			array(
-				'read'      => true,
+				'read' => true,
 				'ns_client' => true,
 			)
 		);
-		// Make sure admins also carry the capability.
-		$admin = get_role( 'administrator' );
-		if ( $admin && ! $admin->has_cap( 'ns_client' ) ) {
-			$admin->add_cap( 'ns_client' );
+
+		$admin = get_role('administrator');
+		if ($admin && !$admin->has_cap('ns_client')) {
+			$admin->add_cap('ns_client');
 		}
 	}
 
-	/**
-	 * Create database tables.
-	 */
-	public static function create_tables() {
+	public static function create_tables()
+	{
 		global $wpdb;
 		require_once ABSPATH . 'wp-admin/includes/upgrade.php';
 
 		$charset_collate = $wpdb->get_charset_collate();
-		$websites        = $wpdb->prefix . 'cc_websites';
-		$logs            = $wpdb->prefix . 'cc_logs';
+		$websites = $wpdb->prefix . 'cc_websites';
+		$logs = $wpdb->prefix . 'cc_logs';
 
 		$sql_websites = "CREATE TABLE {$websites} (
 			id BIGINT(20) UNSIGNED NOT NULL AUTO_INCREMENT,
@@ -79,32 +68,34 @@ class CC_Install {
 			KEY context (context)
 		) {$charset_collate};";
 
-		dbDelta( $sql_websites );
-		dbDelta( $sql_logs );
+		dbDelta($sql_websites);
+		dbDelta($sql_logs);
 	}
 
-	/**
-	 * Seed default settings if not already present.
-	 */
-	public static function seed_settings() {
+	public static function seed_settings()
+	{
 		$defaults = array(
-			'api_token'       => '',
-			'environment'     => 'production', // production | staging
-			'pickup_name'     => '',
-			'pickup_phone'    => '',
-			'pickup_address'  => '',
-			'pickup_city'     => '',
-			'pickup_state'    => '',
-			'pickup_pincode'  => '',
-			'pickup_country'  => 'India',
-			'default_weight'  => '0.5',
-			'default_length'  => '10',
+			'default_courier' => 'delhivery',
+			'api_token' => '',
+			'environment' => 'production',
+			'dtdc_customer_code' => '',
+			'dtdc_username' => '',
+			'dtdc_password' => '',
+			'pickup_name' => '',
+			'pickup_phone' => '',
+			'pickup_address' => '',
+			'pickup_city' => '',
+			'pickup_state' => '',
+			'pickup_pincode' => '',
+			'pickup_country' => 'India',
+			'default_weight' => '0.5',
+			'default_length' => '10',
 			'default_breadth' => '10',
-			'default_height'  => '10',
+			'default_height' => '10',
 			'payment_default' => 'Prepaid',
-			'webhook_secret'  => wp_generate_password( 24, false ),
+			'webhook_secret' => wp_generate_password(24, false),
 		);
-		$existing = get_option( 'cc_settings', array() );
-		update_option( 'cc_settings', wp_parse_args( $existing, $defaults ) );
+		$existing = get_option('cc_settings', array());
+		update_option('cc_settings', wp_parse_args($existing, $defaults));
 	}
 }

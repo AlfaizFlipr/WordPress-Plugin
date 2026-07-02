@@ -1,0 +1,244 @@
+.ccc-wrap {
+  --navy: #0a2540;
+  --teal: #1a56db;
+  --orange: #f97316;
+  --green: #16a34a;
+  --gray: #64748b;
+  --line: #e2e8f0;
+  --bg: #f6f9fc;
+  font-family: -apple-system, "Segoe UI", Inter, Roboto, sans-serif;
+  color: var(--navy);
+  max-width: 760px;
+}
+.ccc-wrap * {
+  box-sizing: border-box;
+}
+.ccc-h1 {
+  font-size: 22px;
+  font-weight: 700;
+  margin: 18px 0 20px;
+  display: flex;
+  align-items: center;
+  gap: 10px;
+}
+.ccc-h1 .ccc-logo {
+  width: 30px;
+  height: 30px;
+  border-radius: 8px;
+  background: var(--teal);
+  color: #fff;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  font-weight: 800;
+  font-size: 13px;
+}
+
+.ccc-panel {
+  background: #fff;
+  border: 1px solid var(--line);
+  border-radius: 14px;
+  padding: 24px;
+  margin-top: 16px;
+}
+.ccc-panel h2 {
+  margin: 0 0 6px;
+  font-size: 16px;
+  font-weight: 700;
+  color: var(--navy);
+}
+.ccc-panel p.ccc-sub {
+  margin: 0 0 18px;
+  color: var(--gray);
+  font-size: 13px;
+}
+
+.ccc-status {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  padding: 3px 11px;
+  border-radius: 999px;
+  font-size: 12px;
+  font-weight: 700;
+}
+.ccc-status::before {
+  content: "";
+  width: 6px;
+  height: 6px;
+  border-radius: 50%;
+  background: currentColor;
+}
+.ccc-status-ok {
+  background: #ecfdf5;
+  color: #15803d;
+}
+.ccc-status-off {
+  background: #f1f5f9;
+  color: var(--gray);
+}
+
+.ccc-field {
+  margin: 0 0 16px;
+}
+.ccc-field label {
+  display: block;
+  font-size: 12px;
+  font-weight: 700;
+  color: var(--gray);
+  margin-bottom: 6px;
+}
+.ccc-field input[type="url"],
+.ccc-field input[type="number"],
+.ccc-field select {
+  border: 1px solid var(--line);
+  border-radius: 8px;
+  padding: 9px 12px;
+  font-size: 13px;
+  width: 100%;
+}
+.ccc-help {
+  font-size: 12px;
+  color: var(--gray);
+  margin-top: 6px;
+}
+
+.ccc-btn {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 6px;
+  cursor: pointer;
+  border: 1px solid var(--line);
+  background: #fff;
+  color: var(--navy);
+  padding: 10px 18px;
+  border-radius: 8px;
+  font-size: 13px;
+  font-weight: 700;
+  text-decoration: none;
+  line-height: 1;
+}
+.ccc-btn:hover {
+  background: var(--bg);
+}
+.ccc-btn-primary {
+  background: var(--teal);
+  border-color: var(--teal);
+  color: #fff;
+}
+.ccc-btn-primary:hover {
+  background: #1442b0;
+  color: #fff;
+}
+.ccc-btn-danger {
+  border-color: #fca5a5;
+  color: #dc2626;
+}
+.ccc-btn-danger:hover {
+  background: #fef2f2;
+}
+.ccc-btn-block {
+  display: flex;
+  width: 100%;
+}
+
+.ccc-kv {
+  width: 100%;
+  border-collapse: collapse;
+  margin-bottom: 4px;
+}
+.ccc-kv th {
+  text-align: left;
+  color: var(--gray);
+  font-size: 12px;
+  font-weight: 600;
+  padding: 7px 0;
+  width: 120px;
+  vertical-align: top;
+}
+.ccc-kv td {
+  padding: 7px 0;
+  font-size: 13px;
+}
+
+.ccc-mode-cards {
+  display: grid;
+  gap: 10px;
+  margin-bottom: 16px;
+}
+.ccc-mode-card {
+  display: flex;
+  gap: 10px;
+  align-items: flex-start;
+  border: 1px solid var(--line);
+  border-radius: 10px;
+  padding: 12px 14px;
+  cursor: pointer;
+  transition: 0.15s;
+}
+.ccc-mode-card:hover {
+  border-color: var(--teal);
+}
+.ccc-mode-card input {
+  margin-top: 3px;
+}
+.ccc-mode-card strong {
+  display: block;
+  font-size: 13px;
+  color: var(--navy);
+}
+.ccc-mode-card span {
+  font-size: 12px;
+  color: var(--gray);
+}
+
+.ccc-courier-badge {
+  display: inline-flex;
+  align-items: center;
+  gap: 5px;
+  padding: 3px 9px;
+  border-radius: 999px;
+  font-size: 11px;
+  font-weight: 700;
+}
+.ccc-courier-badge::before {
+  content: "";
+  width: 6px;
+  height: 6px;
+  border-radius: 50%;
+  background: currentColor;
+}
+.ccc-courier-delhivery {
+  background: #eef4ff;
+  color: var(--teal);
+}
+.ccc-courier-dtdc {
+  background: #fff7ed;
+  color: var(--orange);
+}
+
+.ccc-box p {
+  margin: 0 0 10px;
+}
+.ccc-box .ccc-field {
+  margin-bottom: 10px;
+}
+.ccc-box .ccc-field select {
+  width: 100%;
+}
+.ccc-box-synced {
+  background: #ecfdf5;
+  border: 1px solid #a7f3d0;
+  border-radius: 8px;
+  padding: 10px 12px;
+}
+.ccc-box-time {
+  font-size: 11px;
+  color: var(--gray);
+}
+.ccc-box-note {
+  font-size: 11px;
+  color: var(--gray);
+  margin: 6px 0 10px;
+}

@@ -28,7 +28,13 @@
       "Bash(curl -s -w \"\\\\nHTTP_CODE:%{http_code}\" --max-time 30 \"http://localhost/meezab/wp-json/\")",
       "Bash(echo \"Deployed 8 files\")",
       "Bash(powershell -Command \"Remove-Item -Force 'dist\\\\naya-setu-courier-dashboard.zip' -ErrorAction SilentlyContinue; Compress-Archive -Path 'courier-connector\\\\*' -DestinationPath 'dist\\\\naya-setu-courier-dashboard.zip' -Force; Write-Host \\(\\(Get-Item 'dist\\\\naya-setu-courier-dashboard.zip'\\).Length\\)\")",
-      "PowerShell(& \"C:\\\\xampp\\\\mysql\\\\bin\\\\mysql.exe\" -uroot -e \"SELECT ID, post_title, post_name, post_status, post_content FROM ns_courier.wp_posts WHERE post_type='page' AND post_status='publish';\")"
+      "PowerShell(& \"C:\\\\xampp\\\\mysql\\\\bin\\\\mysql.exe\" -uroot -e \"SELECT ID, post_title, post_name, post_status, post_content FROM ns_courier.wp_posts WHERE post_type='page' AND post_status='publish';\")",
+      "PowerShell(\\(Get-Item \"C:\\\\xampp\\\\htdocs\\\\courier-dashboard\\\\shipment-track.php\"\\).Length)",
+      "PowerShell(& \"C:\\\\Users\\\\LENOVO\\\\AppData\\\\Local\\\\Temp\\\\claude\\\\c--Users-LENOVO-Music-plugin\\\\89905bf8-ee96-48fe-8cf4-2311cc12eabc\\\\scratchpad\\\\write_part4.ps1\")",
+      "PowerShell(& \"C:\\\\Users\\\\LENOVO\\\\AppData\\\\Local\\\\Temp\\\\claude\\\\c--Users-LENOVO-Music-plugin\\\\89905bf8-ee96-48fe-8cf4-2311cc12eabc\\\\scratchpad\\\\rewrite_track.ps1\")",
+      "Bash(/c/xampp/php/php -r ' *)",
+      "Bash(\"/c/xampp/php/php\" -l includes/class-cc-courier-interface.php)",
+      "Bash(/c/xampp/php/php -l \"c:\\\\Users\\\\LENOVO\\\\Music\\\\plugin\\\\shipment-track.php\")"
     ]
   }
 }

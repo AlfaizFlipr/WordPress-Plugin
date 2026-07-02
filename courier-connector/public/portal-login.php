@@ -1,10 +1,6 @@
 <?php
-/**
- * Client Portal — login screen.
- *
- * @package CourierConnector
- */
-if ( ! defined( 'ABSPATH' ) ) {
+
+if (!defined('ABSPATH')) {
 	exit;
 }
 $redirect = get_permalink();
@@ -19,15 +15,15 @@ $redirect = get_permalink();
 		<?php
 		wp_login_form(
 			array(
-				'redirect'       => $redirect,
+				'redirect' => $redirect,
 				'label_username' => 'Email or Username',
 				'label_password' => 'Password',
-				'label_log_in'   => 'Sign In',
+				'label_log_in' => 'Sign In',
 			)
 		);
 		?>
 		<p class="ns-login-foot">
-			<a href="<?php echo esc_url( wp_lostpassword_url( $redirect ) ); ?>">Forgot password?</a>
+			<a href="<?php echo esc_url(wp_lostpassword_url($redirect)); ?>">Forgot password?</a>
 		</p>
 	</div>
 </div>
