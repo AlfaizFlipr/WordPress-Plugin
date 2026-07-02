@@ -28,15 +28,24 @@ if (!defined('ABSPATH')) {
 				<?php wp_nonce_field('cc_stores'); ?>
 				<input type="hidden" name="cc_action" value="store_action" />
 				<input type="hidden" name="sub_action" value="add" />
-				<p><label>Store name<br><input type="text" name="store_name" class="cc-input"
-							placeholder="Fashion Store" /></label></p>
-				<p><label>Store URL<br><input type="url" name="store_url" class="cc-input"
-							placeholder="https://fashionstore.com" required /></label></p>
-				<p><label>Callback base URL (for AWB push-back)<br><input type="url" name="callback_url"
-							class="cc-input" placeholder="https://fashionstore.com/wp-json/courier/v1/" /></label></p>
-				<p><label>Client login email (optional — creates a Client Portal account)<br><input type="email"
-							name="client_email" class="cc-input" placeholder="owner@fashionstore.com" /></label></p>
-				<button class="cc-btn cc-btn-primary" type="submit">Generate API Key</button>
+				<div class="cc-form-grid">
+					<label>Store name
+						<input type="text" name="store_name" class="cc-input" placeholder="Fashion Store" />
+					</label>
+					<label>Store URL
+						<input type="url" name="store_url" class="cc-input" placeholder="https://fashionstore.com" required />
+					</label>
+					<label class="cc-col-span">Callback base URL (for AWB push-back)
+						<input type="url" name="callback_url" class="cc-input"
+							placeholder="https://fashionstore.com/wp-json/courier/v1/" />
+					</label>
+					<label class="cc-col-span">Client login email (optional — creates a Client Portal account)
+						<input type="email" name="client_email" class="cc-input" placeholder="owner@fashionstore.com" />
+					</label>
+				</div>
+				<div class="cc-save-bar">
+					<button class="cc-btn cc-btn-primary" type="submit">Generate API Key</button>
+				</div>
 			</form>
 		</div>
 
@@ -81,13 +90,13 @@ if (!defined('ABSPATH')) {
 								<?php if (!empty($s->client_user_id)): ?>
 									<?php echo esc_html(CC_Clients::label($s->client_user_id)); ?>
 								<?php else: ?>
-									<form method="post" style="display:flex;gap:4px;">
+									<form method="post" class="cc-inline-form">
 										<?php wp_nonce_field('cc_stores'); ?>
 										<input type="hidden" name="cc_action" value="store_action" />
 										<input type="hidden" name="sub_action" value="assign_client" />
 										<input type="hidden" name="store_id" value="<?php echo esc_attr($s->id); ?>" />
-										<input type="email" name="client_email" class="cc-input"
-											style="padding:4px 6px;font-size:12px;" placeholder="client email" required />
+										<input type="email" name="client_email" class="cc-input cc-input-sm"
+											placeholder="client email" required />
 										<button class="cc-btn cc-btn-sm" type="submit">Link</button>
 									</form>
 								<?php endif; ?>
@@ -96,8 +105,8 @@ if (!defined('ABSPATH')) {
 							</td>
 							<td><?php echo esc_html(number_format_i18n($s->orders_synced)); ?></td>
 							<td><?php echo esc_html($s->last_sync ?: '—'); ?></td>
-							<td class="cc-actions">
-								<form method="post" style="display:inline">
+							<td class="cc-actions" style="display: flex; justify-content: center; align-items: center">
+								<form method="post" class="cc-inline-form">
 									<?php wp_nonce_field('cc_stores'); ?>
 									<input type="hidden" name="cc_action" value="store_action" />
 									<input type="hidden" name="store_id" value="<?php echo esc_attr($s->id); ?>" />

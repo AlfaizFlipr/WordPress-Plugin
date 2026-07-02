@@ -27,12 +27,12 @@ if (!defined('ABSPATH')) {
 				<?php else: ?>
 					<?php foreach ($logs as $row): ?>
 						<tr>
-							<td><?php echo esc_html($row->created_at); ?></td>
+							<td style="white-space:nowrap"><?php echo esc_html($row->created_at); ?></td>
 							<td><span class="cc-tag"><?php echo esc_html($row->context); ?></span></td>
-							<td><?php echo 'error' === $row->level ? '<span class="cc-badge cc-badge-cancelled">error</span>' : '<span class="cc-badge cc-badge-booked">' . esc_html($row->level) . '</span>'; ?>
+							<td><?php echo 'error' === $row->level ? '<span class="cc-badge cc-badge-rto">error</span>' : '<span class="cc-badge cc-badge-booked">' . esc_html($row->level) . '</span>'; ?>
 							</td>
-							<td><?php echo esc_html($row->message); ?></td>
-							<td><?php echo $row->data ? '<details><summary>view</summary><pre class="cc-pre">' . esc_html($row->data) . '</pre></details>' : '—'; ?>
+							<td class="cc-log-msg"><?php echo esc_html($row->message); ?></td>
+							<td><?php echo $row->data ? '<details class="cc-log-data"><summary>view</summary><pre class="cc-pre">' . esc_html($row->data) . '</pre></details>' : '—'; ?>
 							</td>
 						</tr>
 					<?php endforeach; ?>

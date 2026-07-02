@@ -1,56 +1,83 @@
 .ccc-wrap {
   --navy: #0a2540;
   --teal: #1a56db;
+  --teal-dark: #1442b0;
   --orange: #f97316;
   --green: #16a34a;
   --gray: #64748b;
   --line: #e2e8f0;
   --bg: #f6f9fc;
+  --shadow-sm: 0 1px 2px rgba(15, 23, 42, 0.05);
+  --shadow-md: 0 4px 14px rgba(15, 23, 42, 0.06);
+  --shadow-lg: 0 12px 32px rgba(15, 23, 42, 0.1);
   font-family: -apple-system, "Segoe UI", Inter, Roboto, sans-serif;
   color: var(--navy);
   max-width: 760px;
+  -webkit-font-smoothing: antialiased;
 }
 .ccc-wrap * {
   box-sizing: border-box;
 }
 .ccc-h1 {
-  font-size: 22px;
-  font-weight: 700;
-  margin: 18px 0 20px;
+  font-size: 23px;
+  font-weight: 800;
+  margin: 14px 0 16px;
   display: flex;
   align-items: center;
   gap: 10px;
+  letter-spacing: -0.01em;
 }
 .ccc-h1 .ccc-logo {
-  width: 30px;
-  height: 30px;
-  border-radius: 8px;
-  background: var(--teal);
+  width: 34px;
+  height: 34px;
+  border-radius: 10px;
+  background: linear-gradient(135deg, var(--teal), var(--teal-dark));
   color: #fff;
   display: inline-flex;
   align-items: center;
   justify-content: center;
   font-weight: 800;
   font-size: 13px;
+  box-shadow: 0 4px 10px rgba(26, 86, 219, 0.28);
 }
 
 .ccc-panel {
   background: #fff;
   border: 1px solid var(--line);
-  border-radius: 14px;
-  padding: 24px;
-  margin-top: 16px;
+  border-radius: 16px;
+  padding: 26px;
+  margin-top: 18px;
+  box-shadow: var(--shadow-md);
+  transition: box-shadow 0.18s ease;
+}
+.ccc-panel:hover {
+  box-shadow: var(--shadow-lg);
 }
 .ccc-panel h2 {
   margin: 0 0 6px;
   font-size: 16px;
   font-weight: 700;
   color: var(--navy);
+  display: flex;
+  align-items: center;
+  gap: 8px;
 }
 .ccc-panel p.ccc-sub {
   margin: 0 0 18px;
   color: var(--gray);
   font-size: 13px;
+  line-height: 1.6;
+}
+.ccc-panel h2 .dashicons {
+  font-size: 15px;
+  width: 26px;
+  height: 26px;
+  line-height: 26px;
+  text-align: center;
+  border-radius: 8px;
+  background: var(--bg);
+  color: var(--teal);
+  flex: none;
 }
 
 .ccc-status {
@@ -148,18 +175,41 @@
   border-collapse: collapse;
   margin-bottom: 4px;
 }
+.ccc-kv tr {
+  border-bottom: 1px solid var(--line);
+}
+.ccc-kv tr:last-child {
+  border-bottom: none;
+}
 .ccc-kv th {
   text-align: left;
   color: var(--gray);
   font-size: 12px;
   font-weight: 600;
-  padding: 7px 0;
+  padding: 9px 12px 9px 0;
   width: 120px;
   vertical-align: top;
 }
 .ccc-kv td {
-  padding: 7px 0;
+  padding: 9px 0;
   font-size: 13px;
+  font-weight: 600;
+  color: var(--navy);
+}
+
+.ccc-actions-row {
+  display: flex;
+  gap: 10px;
+  flex-wrap: wrap;
+  margin-top: 18px;
+}
+.ccc-actions-row form {
+  display: flex;
+  gap: 8px;
+  align-items: center;
+}
+.ccc-num-input {
+  width: 80px;
 }
 
 .ccc-mode-cards {
@@ -233,6 +283,12 @@
   border-radius: 8px;
   padding: 10px 12px;
 }
+.ccc-box-synced p:first-child {
+  margin-top: 0;
+}
+.ccc-box-synced p:last-child {
+  margin-bottom: 0;
+}
 .ccc-box-time {
   font-size: 11px;
   color: var(--gray);
@@ -241,4 +297,36 @@
   font-size: 11px;
   color: var(--gray);
   margin: 6px 0 10px;
+}
+
+/* ---------- Order-edit AWB block ---------- */
+.ccc-awb-block {
+  margin-top: 10px;
+}
+.ccc-kv-list {
+  display: flex;
+  flex-direction: column;
+  margin: 8px 0 0;
+}
+.ccc-kv-row {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  gap: 10px;
+  padding: 6px 0;
+  border-bottom: 1px solid var(--line);
+  font-size: 13px;
+}
+.ccc-kv-row:last-child {
+  border-bottom: none;
+}
+.ccc-kv-label {
+  color: var(--gray);
+  font-weight: 600;
+  font-size: 12px;
+}
+.ccc-kv-value {
+  color: var(--navy);
+  font-weight: 700;
+  text-align: right;
 }

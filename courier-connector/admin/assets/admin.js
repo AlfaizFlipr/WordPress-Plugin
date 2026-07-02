@@ -320,6 +320,14 @@
       $(".cc-row-check").prop("checked", this.checked);
     });
 
+    $(document).on("click", ".cc-tab-btn", function () {
+      var tab = $(this).data("tab");
+      $(".cc-tab-btn").removeClass("active");
+      $(this).addClass("active");
+      $('[data-tab-panel]').removeClass("active");
+      $('[data-tab-panel="' + tab + '"]').addClass("active");
+    });
+
     $("#cc-bulk-push").on("click", function () {
       var ids = $(".cc-row-check:checked")
         .map(function () {

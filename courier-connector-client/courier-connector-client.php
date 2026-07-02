@@ -4,7 +4,7 @@ if (!defined('ABSPATH')) {
 	exit;
 }
 
-define('CCC_VERSION', '1.0.0');
+define('CCC_VERSION', '1.2.0');
 
 class CCC_Client
 {
@@ -262,7 +262,7 @@ class CCC_Client
 		$connected = $this->is_connected();
 		?>
 		<div class="wrap ccc-wrap">
-			<h1 class="ccc-h1"><span class="ccc-logo">NS</span> Courier Connector</h1>
+			<h1 class="ccc-h1"><span class="ccc-logo">NS</span> Courier Connector — Client</h1>
 
 			<?php if (isset($_GET['connected'])): ?>
 				<div class="notice notice-success">
@@ -292,7 +292,7 @@ class CCC_Client
 
 			<div class="ccc-panel">
 				<?php if (!$connected): ?>
-					<h2>Connect your store in 2 minutes</h2>
+					<h2><span class="dashicons dashicons-admin-links"></span> Connect your store in 2 minutes</h2>
 					<p class="ccc-sub">Enter your Naya Setu dashboard URL (the site root, not the admin page). We'll register this
 						store and pull the API key automatically.</p>
 					<form method="post">
@@ -308,7 +308,8 @@ class CCC_Client
 						<button class="ccc-btn ccc-btn-primary">Connect Store</button>
 					</form>
 				<?php else: ?>
-					<h2>Connection <span class="ccc-status ccc-status-ok">Connected</span></h2>
+					<h2><span class="dashicons dashicons-admin-links"></span> Connection <span
+							class="ccc-status ccc-status-ok">Connected</span></h2>
 					<table class="ccc-kv">
 						<tr>
 							<th>Dashboard</th>
@@ -324,11 +325,13 @@ class CCC_Client
 						</tr>
 					</table>
 
-					<div style="display:flex;gap:10px;flex-wrap:wrap;margin-top:16px">
-						<form method="post" style="display:flex;gap:8px">
+					<div class="ccc-actions-row">
+						<form method="post">
 							<?php wp_nonce_field('ccc_connect'); ?>
 							<input type="hidden" name="ccc_action" value="bulk_sync" />
-							<input type="number" name="count" value="50" min="1" max="500" style="width:80px" />
+							<label for="ccc_sync_count" class="screen-reader-text">Number of orders to sync</label>
+							<input type="number" id="ccc_sync_count" name="count" value="50" min="1" max="500"
+								class="ccc-num-input" />
 							<button class="ccc-btn ccc-btn-primary">Sync recent orders</button>
 						</form>
 
@@ -344,7 +347,7 @@ class CCC_Client
 
 			<?php if ($connected): ?>
 				<div class="ccc-panel">
-					<h2>Delivery Partner</h2>
+					<h2><span class="dashicons dashicons-car"></span> Delivery Partner</h2>
 					<p class="ccc-sub">Choose whether every order automatically ships with one fixed courier, or whether you pick
 						the courier yourself on each order (from the order edit screen).</p>
 					<form method="post">
@@ -562,13 +565,15 @@ class CCC_Client
 		}
 		$courier = $order->get_meta('_courier_name') ?: 'Delhivery';
 		$courier_cls = 'DTDC' === $courier ? 'ccc-courier-dtdc' : 'ccc-courier-delhivery';
-		echo '<div class="address ccc-wrap" style="margin-top:10px;">';
+		echo '<div class="address ccc-wrap ccc-awb-block">';
 		echo '<p><span class="ccc-courier-badge ' . esc_attr($courier_cls) . '">' . esc_html($courier) . '</span></p>';
-		echo '<p><strong>AWB:</strong> ' . esc_html($awb) . '</p>';
-		echo '<p><strong>Status:</strong> ' . esc_html($order->get_meta('_shipment_status') ?: '—') . '</p>';
+		echo '<div class="ccc-kv-list">';
+		echo '<div class="ccc-kv-row"><span class="ccc-kv-label">AWB</span><span class="ccc-kv-value">' . esc_html($awb) . '</span></div>';
+		echo '<div class="ccc-kv-row"><span class="ccc-kv-label">Status</span><span class="ccc-kv-value">' . esc_html($order->get_meta('_shipment_status') ?: '—') . '</span></div>';
+		echo '</div>';
 		$url = $order->get_meta('_tracking_url');
 		if ($url) {
-			echo '<p><a href="' . esc_url($url) . '" target="_blank" class="button">Track Shipment</a></p>';
+			echo '<p style="margin-top:10px"><a href="' . esc_url($url) . '" target="_blank" class="button">Track Shipment</a></p>';
 		}
 		echo '</div>';
 	}
@@ -610,8 +615,8 @@ class CCC_Client
 
 		if ($synced) {
 			echo '<div class="ccc-box-synced">';
-			echo '<p style="margin-top:0"><strong>✅ Sent to dashboard</strong></p>';
-			echo '<p style="margin-bottom:0"><span class="ccc-courier-badge ' . esc_attr($courier_cls) . '">' . esc_html(self::COURIERS[$courier] ?? $courier) . '</span></p>';
+			echo '<p><strong>✅ Sent to dashboard</strong></p>';
+			echo '<p><span class="ccc-courier-badge ' . esc_attr($courier_cls) . '">' . esc_html(self::COURIERS[$courier] ?? $courier) . '</span></p>';
 			echo '</div>';
 			echo '<p class="ccc-box-time">' . esc_html($synced) . '</p>';
 		} else {

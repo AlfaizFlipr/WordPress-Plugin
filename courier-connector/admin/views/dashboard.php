@@ -32,22 +32,27 @@ foreach ($couriers as $c) {
 
 	<div class="cc-cards">
 		<div class="cc-card cc-card-total">
+			<span class="dashicons dashicons-list-view cc-card-icon"></span>
 			<div class="cc-card-label">Total Orders</div>
 			<div class="cc-card-value"><?php echo esc_html(number_format_i18n($cards['total'])); ?></div>
 		</div>
 		<div class="cc-card cc-card-pending">
+			<span class="dashicons dashicons-clock cc-card-icon"></span>
 			<div class="cc-card-label">Pending Shipment</div>
 			<div class="cc-card-value"><?php echo esc_html(number_format_i18n($cards['pending'])); ?></div>
 		</div>
 		<div class="cc-card cc-card-booked">
+			<span class="dashicons dashicons-yes-alt cc-card-icon"></span>
 			<div class="cc-card-label">Booked</div>
 			<div class="cc-card-value"><?php echo esc_html(number_format_i18n($cards['booked'])); ?></div>
 		</div>
 		<div class="cc-card cc-card-transit">
+			<span class="dashicons dashicons-airplane cc-card-icon"></span>
 			<div class="cc-card-label">In Transit</div>
 			<div class="cc-card-value"><?php echo esc_html(number_format_i18n($cards['in-transit'])); ?></div>
 		</div>
 		<div class="cc-card cc-card-delivered">
+			<span class="dashicons dashicons-flag cc-card-icon"></span>
 			<div class="cc-card-label">Delivered</div>
 			<div class="cc-card-value"><?php echo esc_html(number_format_i18n($cards['delivered'])); ?></div>
 		</div>
@@ -79,7 +84,7 @@ foreach ($couriers as $c) {
 				</p>
 			<?php endforeach; ?>
 			<p><strong>Pickup location:</strong> <?php echo esc_html(CC_Settings::get('pickup_name') ?: '—'); ?></p>
-			<p><strong>Connect-store endpoint:</strong><br>
+			<p><strong style="margin-top: 10px;">Connect-store endpoint:</strong><br>
 				<code><?php echo esc_html(rest_url('courier/v1/connect-store')); ?></code>
 			</p>
 		</div>
