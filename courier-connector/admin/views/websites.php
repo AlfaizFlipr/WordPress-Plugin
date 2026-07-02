@@ -33,7 +33,8 @@ if (!defined('ABSPATH')) {
 						<input type="text" name="store_name" class="cc-input" placeholder="Fashion Store" />
 					</label>
 					<label>Store URL
-						<input type="url" name="store_url" class="cc-input" placeholder="https://fashionstore.com" required />
+						<input type="url" name="store_url" class="cc-input" placeholder="https://fashionstore.com"
+							required />
 					</label>
 					<label class="cc-col-span">Callback base URL (for AWB push-back)
 						<input type="url" name="callback_url" class="cc-input"
