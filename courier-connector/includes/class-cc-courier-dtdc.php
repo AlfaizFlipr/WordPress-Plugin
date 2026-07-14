@@ -46,11 +46,11 @@ class CC_Courier_DTDC implements CC_Courier_Interface
 
 	public function packing_slip($awb)
 	{
-
+		$res = $this->api->label($awb);
 		return array(
-			'ok' => false,
-			'label_url' => '',
-			'raw' => 'Label download is not yet configured for DTDC. Check DTDC\'s label API endpoint for your account.',
+			'ok' => $res['ok'],
+			'label_url' => $res['ok'] ? $res['url'] : '',
+			'raw' => $res['ok'] ? '' : $res['raw'],
 		);
 	}
 

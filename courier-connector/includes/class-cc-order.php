@@ -285,22 +285,26 @@ class CC_Order
 		$pickup_pincode = CC_Settings::get('pickup_pincode');
 		$pickup_phone = CC_Settings::get('pickup_phone');
 
+		$is_cod = $this->is_cod();
+
 		return array(
 			'customer_reference_number' => (string) $o->get_order_number(),
-			'reference_number' => (string) $o->get_order_number(),
+			'service_type_id' => CC_Settings::get('dtdc_service_type_id', 'GROUND EXPRESS'),
 			'load_type' => 'NON-DOCUMENT',
-			'consignment_type' => 'Forward',
+			'description' => implode(', ', $products),
+			'cod_favor_of' => $is_cod ? $pickup_name : '',
+			'cod_amount' => $this->cod_amount(),
+			'cod_collection_mode' => $is_cod ? 'cash' : '',
+			'consignment_type' => CC_Settings::get('dtdc_consignment_type', 'Reverse'),
 			'dimension_unit' => 'cm',
 			'length' => (float) CC_Settings::get('default_length', '10'),
 			'width' => (float) CC_Settings::get('default_breadth', '10'),
 			'height' => (float) CC_Settings::get('default_height', '10'),
 			'weight_unit' => 'kg',
 			'weight' => (float) CC_Settings::get('default_weight', '0.5'),
-			'declared_value' => (float) $o->get_total(),
 			'num_pieces' => $quantity,
-			'commodity_id' => '',
-			'cod_collection_mode' => $this->is_cod() ? 'cash' : '',
-			'cod_amount' => $this->cod_amount(),
+			'declared_value' => (float) $o->get_total(),
+			'commodity_id' => sanitize_title($products[0]) ?: 'general-goods',
 			'origin_details' => array(
 				'name' => $pickup_name,
 				'phone' => $pickup_phone,
@@ -312,12 +316,12 @@ class CC_Order
 			'destination_details' => array(
 				'name' => $name,
 				'phone' => $o->get_billing_phone(),
+				'alternate_phone' => $o->get_billing_phone(),
 				'address_line_1' => $address,
 				'pincode' => $o->get_shipping_postcode() ?: $o->get_billing_postcode(),
 				'city' => $o->get_shipping_city() ?: $o->get_billing_city(),
 				'state' => $o->get_shipping_state() ?: $o->get_billing_state(),
 			),
-			'product_desc' => implode(', ', $products),
 		);
 	}
 }

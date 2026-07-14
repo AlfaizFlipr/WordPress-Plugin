@@ -7,11 +7,25 @@ if (!defined('ABSPATH')) {
 class CC_Dtdc_Api
 {
 
-	const TOKEN_TRANSIENT = 'cc_dtdc_token';
-
 	protected function base_url()
 	{
-		return 'https://dtdcapi.shipsy.io';
+		return 'https://pxapi.dtdc.in';
+	}
+
+	protected function tracking_url()
+	{
+		return 'https://blktracksvc.dtdc.com/dtdc-api/rest/JSONCnTrk/getTrackDetails';
+	}
+
+	protected function api_key()
+	{
+		return trim((string) CC_Settings::get('dtdc_api_key'));
+	}
+
+	protected function tracking_token()
+	{
+		$token = trim((string) CC_Settings::get('dtdc_tracking_token'));
+		return '' !== $token ? $token : $this->api_key();
 	}
 
 	protected function customer_code()
@@ -19,85 +33,28 @@ class CC_Dtdc_Api
 		return trim((string) CC_Settings::get('dtdc_customer_code'));
 	}
 
-	protected function username()
-	{
-		return trim((string) CC_Settings::get('dtdc_username'));
-	}
-
-	protected function password()
-	{
-		return trim((string) CC_Settings::get('dtdc_password'));
-	}
-
 	public function is_configured()
 	{
-		return '' !== $this->customer_code() && '' !== $this->username() && '' !== $this->password();
+		return '' !== $this->api_key() && '' !== $this->customer_code();
 	}
 
-	protected function token($force = false)
+	protected function request($method, $url, $body = null, array $headers = array())
 	{
-		if (!$force) {
-			$cached = get_transient(self::TOKEN_TRANSIENT);
-			if ($cached) {
-				return $cached;
-			}
-		}
-
-		$url = add_query_arg(
+		$response = wp_remote_request(
+			$url,
 			array(
-				'username' => rawurlencode($this->username()),
-				'password' => rawurlencode($this->password()),
-			),
-			$this->base_url() . '/api/dtdc/authenticate'
-		);
-
-		$response = wp_remote_get($url, array('timeout' => 30));
-		if (is_wp_error($response)) {
-			CC_Logger::error('dtdc', 'Authentication failed: ' . $response->get_error_message());
-			return $response;
-		}
-
-		$code = wp_remote_retrieve_response_code($response);
-		$token = trim(wp_remote_retrieve_body($response), "\" \n\r\t");
-
-		if ($code < 200 || $code >= 300 || '' === $token) {
-			CC_Logger::error('dtdc', 'Authentication rejected (HTTP ' . $code . ').', array('body' => $token));
-			return new WP_Error('cc_dtdc_auth', 'Could not authenticate with DTDC. Check the customer code / username / password in Settings.');
-		}
-
-		set_transient(self::TOKEN_TRANSIENT, $token, 50 * MINUTE_IN_SECONDS);
-		return $token;
-	}
-
-	protected function request($method, $url, $body = null)
-	{
-		$token = $this->token();
-		if (is_wp_error($token)) {
-			return array('ok' => false, 'code' => 0, 'body' => array('error' => $token->get_error_message()), 'raw' => '');
-		}
-
-		$do_request = function ($tok) use ($method, $url, $body) {
-			return wp_remote_request(
-				$url,
-				array(
-					'method' => $method,
-					'timeout' => 45,
-					'headers' => array(
-						'api-key' => $tok,
+				'method' => $method,
+				'timeout' => 45,
+				'headers' => array_merge(
+					array(
 						'Content-Type' => 'application/json',
 						'Accept' => 'application/json',
 					),
-					'body' => null === $body ? null : wp_json_encode($body),
-				)
-			);
-		};
-
-		$response = $do_request($token);
-
-		if (!is_wp_error($response) && 401 === (int) wp_remote_retrieve_response_code($response)) {
-			$token = $this->token(true);
-			$response = is_wp_error($token) ? $response : $do_request($token);
-		}
+					$headers
+				),
+				'body' => null === $body ? null : wp_json_encode($body),
+			)
+		);
 
 		if (is_wp_error($response)) {
 			CC_Logger::error('dtdc', $response->get_error_message(), array('url' => $url));
@@ -122,7 +79,8 @@ class CC_Dtdc_Api
 		$res = $this->request(
 			'POST',
 			$this->base_url() . '/api/customer/integration/consignment/softdata',
-			array('consignments' => array($consignment))
+			array('consignments' => array($consignment)),
+			array('api-key' => $this->api_key())
 		);
 
 		$awb = '';
@@ -131,7 +89,7 @@ class CC_Dtdc_Api
 
 		if (is_array($res['body']) && !empty($res['body']['data'][0])) {
 			$row = $res['body']['data'][0];
-			$awb = $row['awb_no'] ?? ($row['reference_number'] ?? '');
+			$awb = $row['reference_number'] ?? ($row['awb_no'] ?? '');
 			$remark = $row['message'] ?? '';
 		} elseif (is_array($res['body']) && !empty($res['body']['message'])) {
 			$remark = $res['body']['message'];
@@ -149,17 +107,18 @@ class CC_Dtdc_Api
 	{
 		$res = $this->request(
 			'POST',
-			$this->base_url() . '/api/customer/integration/consignment/track',
+			$this->tracking_url(),
 			array(
-				'trkType' => 'cnno',
+				'TrkType' => 'cnno',
 				'strcnno' => $awb,
-			)
+				'addtnlDtl' => 'Y',
+			),
+			array('x-access-token' => $this->tracking_token())
 		);
 
 		$status = '';
 		$location = '';
 		$scans = array();
-		$details = array();
 
 		if (is_array($res['body']) && !empty($res['body']['trackDetails'])) {
 			$details = $res['body']['trackDetails'];
@@ -190,7 +149,64 @@ class CC_Dtdc_Api
 		return $this->request(
 			'POST',
 			$this->base_url() . '/api/customer/integration/consignment/cancel',
-			array('AWBNo' => array($awb))
+			array(
+				'AWBNo' => array($awb),
+				'customerCode' => $this->customer_code(),
+			),
+			array('api-key' => $this->api_key())
 		);
+	}
+
+	public function label($reference_number)
+	{
+		$url = add_query_arg(
+			array(
+				'reference_number' => $reference_number,
+				'label_code' => 'SHIP_LABEL_4X6',
+				'label_format' => 'pdf',
+			),
+			$this->base_url() . '/api/customer/integration/consignment/shippinglabel/stream'
+		);
+
+		$response = wp_remote_get(
+			$url,
+			array(
+				'timeout' => 45,
+				'headers' => array(
+					'api-key' => $this->api_key(),
+					'Accept' => 'application/pdf',
+				),
+			)
+		);
+
+		if (is_wp_error($response)) {
+			CC_Logger::error('dtdc', $response->get_error_message(), array('url' => $url));
+			return array('ok' => false, 'url' => '', 'raw' => $response->get_error_message());
+		}
+
+		$code = wp_remote_retrieve_response_code($response);
+		$body = wp_remote_retrieve_body($response);
+		$is_pdf = is_string($body) && '%PDF-' === substr($body, 0, 5);
+
+		if ($code < 200 || $code >= 300 || !$is_pdf) {
+			CC_Logger::error('dtdc', 'Label download failed (HTTP ' . $code . ').', array('body' => is_string($body) ? substr($body, 0, 500) : $body));
+			return array('ok' => false, 'url' => '', 'raw' => is_string($body) ? $body : '');
+		}
+
+		$upload_dir = wp_upload_dir();
+		$dir = trailingslashit($upload_dir['basedir']) . 'cc-labels';
+		if (!file_exists($dir)) {
+			wp_mkdir_p($dir);
+		}
+
+		$filename = 'dtdc-' . preg_replace('/[^A-Za-z0-9_-]/', '', $reference_number) . '.pdf';
+		$path = trailingslashit($dir) . $filename;
+		file_put_contents($path, $body);
+
+		$url_out = trailingslashit($upload_dir['baseurl']) . 'cc-labels/' . $filename;
+
+		CC_Logger::log('dtdc', 'Label saved for ' . $reference_number, array('url' => $url_out), 'info');
+
+		return array('ok' => true, 'url' => $url_out, 'raw' => '');
 	}
 }

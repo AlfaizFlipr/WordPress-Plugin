@@ -97,8 +97,10 @@ class CC_Admin
 			'default_height',
 			'payment_default',
 			'dtdc_customer_code',
-			'dtdc_username',
-			'dtdc_password',
+			'dtdc_api_key',
+			'dtdc_tracking_token',
+			'dtdc_service_type_id',
+			'dtdc_consignment_type',
 		);
 		$values = array();
 		foreach ($fields as $f) {

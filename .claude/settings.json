@@ -34,7 +34,28 @@
       "PowerShell(& \"C:\\\\Users\\\\LENOVO\\\\AppData\\\\Local\\\\Temp\\\\claude\\\\c--Users-LENOVO-Music-plugin\\\\89905bf8-ee96-48fe-8cf4-2311cc12eabc\\\\scratchpad\\\\rewrite_track.ps1\")",
       "Bash(/c/xampp/php/php -r ' *)",
       "Bash(\"/c/xampp/php/php\" -l includes/class-cc-courier-interface.php)",
-      "Bash(/c/xampp/php/php -l \"c:\\\\Users\\\\LENOVO\\\\Music\\\\plugin\\\\shipment-track.php\")"
+      "Bash(/c/xampp/php/php -l \"c:\\\\Users\\\\LENOVO\\\\Music\\\\plugin\\\\shipment-track.php\")",
+      "Bash(curl -s -w '\\\\nHTTP %{http_code}\\\\n' -o /c/Users/LENOVO/AppData/Local/Temp/claude/c--Users-LENOVO-Music-plugin/9a343f7d-63ac-4bbd-be46-eccd4df2ce00/scratchpad/label1.bin 'https://pxapi.dtdc.in/api/customer/integration/consignment/shippinglabel/stream?reference_number=D4000621869&label_code=SHIP_LABEL_4X6&label_format=pdf' -H 'api-key: 1e5eefeb4914858215c48f71839079')",
+      "Bash(curl -s -w '\\\\nHTTP %{http_code}\\\\n' https://pxapi.dtdc.in/api/customer/integration/consignment/cancel -X POST -H 'Content-Type: application/json' -H 'api-key: 1e5eefeb4914858215c48f71839079' -d '{\"AWBNo\":[\"D4000621869\"],\"customerCode\":\"IO1740\"}')",
+      "Bash(/c/xampp/php/php.exe -r ' *)",
+      "Bash(curl -s -D /c/Users/LENOVO/AppData/Local/Temp/claude/c--Users-LENOVO-Music-plugin/9a343f7d-63ac-4bbd-be46-eccd4df2ce00/scratchpad/label_headers.txt -o /c/Users/LENOVO/AppData/Local/Temp/claude/c--Users-LENOVO-Music-plugin/9a343f7d-63ac-4bbd-be46-eccd4df2ce00/scratchpad/label2.bin 'https://pxapi.dtdc.in/api/customer/integration/consignment/shippinglabel/stream?reference_number=D4000621869&label_code=SHIP_LABEL_4X6&label_format=pdf' -H 'api-key: 1e5eefeb4914858215c48f71839079')",
+      "Bash(/c/xampp/php/php.exe -l /c/xampp/htdocs/courier-dashboard/wp-content/plugins/courier-connector/includes/class-cc-dtdc-api.php)",
+      "Bash(curl -s -o /dev/null -w \"HTTP %{http_code}\\\\n\" \"http://localhost/courier-dashboard/wp-content/uploads/cc-labels/dtdc-D4000621870.pdf\")",
+      "Bash(\"/c/xampp/mysql/bin/mysql\" -u root -h 127.0.0.1 -P 3306 ns_courier -e \"SELECT ID, post_status, post_type FROM wp_posts WHERE ID IN \\(24,25,26,27,28\\);\")",
+      "Bash(rm -f \"/c/Users/LENOVO/AppData/Local/Temp/claude/c--Users-LENOVO-Music-plugin/9a343f7d-63ac-4bbd-be46-eccd4df2ce00/scratchpad/\"*.json \"/c/Users/LENOVO/AppData/Local/Temp/claude/c--Users-LENOVO-Music-plugin/9a343f7d-63ac-4bbd-be46-eccd4df2ce00/scratchpad/\"*.bin)",
+      "Bash(\"/c/xampp/mysql/bin/mysql\" -u root -h 127.0.0.1 -P 3306 meezab -e \"SELECT option_value FROM wp_options WHERE option_name='active_plugins';\")",
+      "Bash(\"/c/xampp/mysql/bin/mysql\" -u root -h 127.0.0.1 -P 3306 meezab -e \"SELECT option_name, LENGTH\\(option_value\\) FROM wp_options WHERE option_name LIKE '%cc_%' OR option_name LIKE '%courier%';\")",
+      "Bash(\"/c/xampp/mysql/bin/mysql\" -u root -h 127.0.0.1 -P 3306 meezab -e \"SELECT option_value FROM wp_options WHERE option_name='shipsy_access_token';\")",
+      "Bash(\"/c/xampp/mysql/bin/mysql\" -u root -h 127.0.0.1 -P 3306 ns_courier -e \"SELECT id, store_name, store_url, api_key, status FROM wp_cc_websites;\")",
+      "Bash(cp -r /c/Users/LENOVO/Music/plugin/courier-connector-client /c/xampp/htdocs/Meezab/wp-content/plugins/courier-connector-client)",
+      "Bash(/c/xampp/php/php.exe -l /c/xampp/htdocs/Meezab/wp-content/plugins/courier-connector-client/courier-connector-client.php)",
+      "Bash(\"/c/xampp/php/php.exe\" \"C:\\\\Users\\\\LENOVO\\\\AppData\\\\Local\\\\Temp\\\\claude\\\\c--Users-LENOVO-Music-plugin\\\\9a343f7d-63ac-4bbd-be46-eccd4df2ce00\\\\scratchpad\\\\meezab_two_orders_test.php\")",
+      "Bash(\"/c/xampp/mysql/bin/mysql\" -u root -h 127.0.0.1 -P 3306 ns_courier -e \"SELECT created_at, level, message, LEFT\\(data,300\\) FROM wp_cc_logs WHERE context='dtdc' ORDER BY id DESC LIMIT 5;\")",
+      "Bash(\"/c/xampp/mysql/bin/mysql\" -u root -h 127.0.0.1 -P 3306 ns_courier -e \"SELECT p.ID, pm3.meta_value AS awb, pm4.meta_value AS ship_status FROM wp_posts p LEFT JOIN wp_postmeta pm3 ON pm3.post_id=p.ID AND pm3.meta_key='_cc_awb' LEFT JOIN wp_postmeta pm4 ON pm4.post_id=p.ID AND pm4.meta_key='_cc_ship_status' WHERE p.ID=30;\")",
+      "Bash(curl -s -o /dev/null -w \"Label HTTP: %{http_code}\\\\n\" \"http://localhost/courier-dashboard/wp-content/uploads/cc-labels/dtdc-D1018380816.pdf\")",
+      "Bash(\"/c/xampp/mysql/bin/mysql\" -u root -h 127.0.0.1 -P 3306 ns_courier -e \"SELECT ID, post_title, post_status, post_name FROM wp_posts WHERE post_type='page' AND post_content LIKE '%naya_setu_track%';\")",
+      "Bash(curl -s -o /dev/null -w \"Delhivery track HTTP: %{http_code}\\\\n\" \"http://localhost/courier-dashboard/shipment-track.php?awb=56535210000162\")",
+      "Bash(curl -s -o /dev/null -w \"DTDC track HTTP: %{http_code}\\\\n\" \"http://localhost/courier-dashboard/shipment-track.php?awb=D1018380816\")"
     ]
   }
 }

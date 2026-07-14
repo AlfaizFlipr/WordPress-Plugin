@@ -103,21 +103,41 @@ $notice = $_GET['cc_notice'] ?? '';
 									placeholder="From DTDC onboarding" />
 								<span class="cc-field-hint">Given by DTDC when your account is onboarded.</span>
 							</label>
-							<label>API Username
-								<input type="text" name="dtdc_username" class="cc-input"
-									value="<?php echo esc_attr($g('dtdc_username')); ?>" placeholder="DTDC API user ID" />
-								<span class="cc-field-hint">From your DTDC API access mail, or ask your DTDC account
-									manager.</span>
+							<label>API Key
+								<input type="password" name="dtdc_api_key" class="cc-input"
+									value="<?php echo esc_attr($g('dtdc_api_key')); ?>" autocomplete="new-password"
+									placeholder="DTDC api-key" />
+								<span class="cc-field-hint">Sent as the <code>api-key</code> header on
+									pxapi.dtdc.in for booking / cancel / label. From your DTDC API access mail or
+									account manager.</span>
 							</label>
-							<label>API Password
-								<input type="password" name="dtdc_password" class="cc-input"
-									value="<?php echo esc_attr($g('dtdc_password')); ?>" autocomplete="new-password"
-									placeholder="DTDC API password" />
-								<span class="cc-field-hint">Issued together with the API username — not your DTDC portal
-									login password.</span>
+							<label>Tracking Token (optional)
+								<input type="password" name="dtdc_tracking_token" class="cc-input"
+									value="<?php echo esc_attr($g('dtdc_tracking_token')); ?>" autocomplete="new-password"
+									placeholder="Defaults to API Key above" />
+								<span class="cc-field-hint">Sent as <code>x-access-token</code> to DTDC's bulk
+									tracking service (blktracksvc.dtdc.com), which can be issued separately from the
+									booking api-key. Leave blank to reuse the API Key above.</span>
+							</label>
+							<label>Service Type ID
+								<input type="text" name="dtdc_service_type_id" class="cc-input"
+									value="<?php echo esc_attr($g('dtdc_service_type_id', 'GROUND EXPRESS')); ?>"
+									placeholder="GROUND EXPRESS" />
+								<span class="cc-field-hint">The DTDC product code approved for your account
+									(verified working for IO1740: <code>GROUND EXPRESS</code>).</span>
+							</label>
+							<label>Consignment Type
+								<select name="dtdc_consignment_type" class="cc-input">
+									<option value="Reverse" <?php selected($g('dtdc_consignment_type', 'Reverse'), 'Reverse'); ?>>Reverse</option>
+									<option value="Forward" <?php selected($g('dtdc_consignment_type', 'Reverse'), 'Forward'); ?>>Forward</option>
+								</select>
+								<span class="cc-field-hint">DTDC accounts are provisioned as either Forward or
+									Reverse customers; sending the wrong one is rejected outright. IO1740 is a
+									Reverse customer.</span>
 							</label>
 						</div>
-						<p class="cc-help">DTDC's exact field names can vary by onboarding product — if bookings fail, check
+						<p class="cc-help">DTDC's exact field names can vary by onboarding product — if bookings fail,
+							check
 							the Logs page and see the notes in <code>includes/class-cc-dtdc-api.php</code>.</p>
 					</div>
 				</div>
@@ -182,7 +202,8 @@ $notice = $_GET['cc_notice'] ?? '';
 			<div class="cc-tab-panel" data-tab-panel="advanced">
 				<div class="cc-panel">
 					<h2><span class="dashicons dashicons-admin-links"></span> Webhooks &amp; Endpoints</h2>
-					<p class="cc-help">Read-only reference — these are generated automatically, so there's nothing to save
+					<p class="cc-help">Read-only reference — these are generated automatically, so there's nothing to
+						save
 						here.</p>
 					<div class="cc-kv-list">
 						<div class="cc-kv-row">
@@ -192,11 +213,13 @@ $notice = $_GET['cc_notice'] ?? '';
 						</div>
 						<div class="cc-kv-row">
 							<span class="cc-kv-label">Push order</span>
-							<span class="cc-kv-value"><code><?php echo esc_html(rest_url('courier/v1/orders')); ?></code></span>
+							<span
+								class="cc-kv-value"><code><?php echo esc_html(rest_url('courier/v1/orders')); ?></code></span>
 						</div>
 						<div class="cc-kv-row">
 							<span class="cc-kv-label">Webhook secret</span>
-							<span class="cc-kv-value"><code><?php echo esc_html($g('webhook_secret') ?: '—'); ?></code></span>
+							<span
+								class="cc-kv-value"><code><?php echo esc_html($g('webhook_secret') ?: '—'); ?></code></span>
 						</div>
 						<div class="cc-kv-row">
 							<span class="cc-kv-label">Tracking cron</span>
