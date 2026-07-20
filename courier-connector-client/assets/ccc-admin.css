@@ -117,12 +117,31 @@
 }
 .ccc-field input[type="url"],
 .ccc-field input[type="number"],
+.ccc-field input[type="text"],
+.ccc-field input[type="password"],
 .ccc-field select {
   border: 1px solid var(--line);
   border-radius: 8px;
   padding: 9px 12px;
   font-size: 13px;
   width: 100%;
+}
+
+.ccc-grid-2 {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 0 16px;
+}
+.ccc-grid-4 {
+  display: grid;
+  grid-template-columns: repeat(4, 1fr);
+  gap: 0 16px;
+}
+@media (max-width: 782px) {
+  .ccc-grid-2,
+  .ccc-grid-4 {
+    grid-template-columns: 1fr;
+  }
 }
 .ccc-help {
   font-size: 12px;

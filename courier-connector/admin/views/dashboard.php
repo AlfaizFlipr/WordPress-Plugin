@@ -24,9 +24,9 @@ foreach ($couriers as $c) {
 
 	<?php if (!$any_configured): ?>
 		<div class="cc-alert cc-alert-warn">
-			<strong>Setup needed.</strong> Add at least one courier's API credentials and your pickup location under
+			<strong>Setup needed.</strong> Add at least one courier's API credentials under
 			<a href="<?php echo esc_url(admin_url('admin.php?page=cc-settings')); ?>">Settings</a> to start creating
-			shipments.
+			shipments. Pickup addresses come from each client's connector plugin.
 		</div>
 	<?php endif; ?>
 
@@ -66,10 +66,10 @@ foreach ($couriers as $c) {
 						pending shipments</a></li>
 				<li><a href="<?php echo esc_url(admin_url('admin.php?page=cc-orders&ship_status=in-transit')); ?>">Track
 						in-transit orders</a></li>
-				<li><a href="<?php echo esc_url(admin_url('admin.php?page=cc-websites')); ?>">Manage connected
-						stores</a></li>
-				<li><a href="<?php echo esc_url(admin_url('admin.php?page=cc-settings')); ?>">Courier API &amp;
-						pickup settings</a></li>
+				<li><a href="<?php echo esc_url(admin_url('admin.php?page=cc-websites')); ?>">Manage clients &amp;
+						API keys</a></li>
+				<li><a href="<?php echo esc_url(admin_url('admin.php?page=cc-settings')); ?>">Courier API
+						settings</a></li>
 			</ul>
 		</div>
 		<div class="cc-panel">
@@ -83,9 +83,9 @@ foreach ($couriers as $c) {
 							class="cc-tag">Default</span><?php endif; ?>
 				</p>
 			<?php endforeach; ?>
-			<p><strong>Pickup location:</strong> <?php echo esc_html(CC_Settings::get('pickup_name') ?: '—'); ?></p>
-			<p><strong style="margin-top: 10px;">Connect-store endpoint:</strong><br>
-				<code><?php echo esc_html(rest_url('courier/v1/connect-store')); ?></code>
+			<p><strong>Pickup locations:</strong> set per client in their connector plugin (see Clients page).</p>
+			<p><strong style="margin-top: 10px;">Key handshake endpoint:</strong><br>
+				<code><?php echo esc_html(rest_url('courier/v1/handshake')); ?></code>
 			</p>
 		</div>
 	</div>

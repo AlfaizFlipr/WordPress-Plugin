@@ -32,7 +32,7 @@ class CC_Admin
 
 		add_submenu_page('cc-dashboard', 'Dashboard', 'Dashboard', self::CAP, 'cc-dashboard', array($this, 'page_dashboard'));
 		add_submenu_page('cc-dashboard', 'Orders', 'Orders', self::CAP, 'cc-orders', array($this, 'page_orders'));
-		add_submenu_page('cc-dashboard', 'Connected Stores', 'Connected Stores', self::CAP, 'cc-websites', array($this, 'page_websites'));
+		add_submenu_page('cc-dashboard', 'Clients', 'Clients', self::CAP, 'cc-websites', array($this, 'page_websites'));
 		add_submenu_page('cc-dashboard', 'Settings', 'Settings', self::CAP, 'cc-settings', array($this, 'page_settings'));
 		add_submenu_page('cc-dashboard', 'Logs', 'Logs', self::CAP, 'cc-logs', array($this, 'page_logs'));
 	}
@@ -67,11 +67,6 @@ class CC_Admin
 			$this->save_settings();
 		}
 
-		if ('register_pickup' === $action) {
-			check_admin_referer('cc_settings');
-			$this->register_pickup();
-		}
-
 		if ('store_action' === $action) {
 			check_admin_referer('cc_stores');
 			$this->store_action();
@@ -80,21 +75,12 @@ class CC_Admin
 
 	protected function save_settings()
 	{
+		// Pickup address & parcel size are per-client now — set in each
+		// client's connector plugin, not here. Naya Setu is the service provider.
 		$fields = array(
 			'default_courier',
 			'api_token',
 			'environment',
-			'pickup_name',
-			'pickup_phone',
-			'pickup_address',
-			'pickup_city',
-			'pickup_state',
-			'pickup_pincode',
-			'pickup_country',
-			'default_weight',
-			'default_length',
-			'default_breadth',
-			'default_height',
 			'payment_default',
 			'dtdc_customer_code',
 			'dtdc_api_key',
@@ -107,27 +93,9 @@ class CC_Admin
 			$values[$f] = isset($_POST[$f]) ? sanitize_text_field(wp_unslash($_POST[$f])) : '';
 		}
 
-		$values['auto_push_on_receive'] = !empty($_POST['auto_push_on_receive']) ? '1' : '0';
 		$values['default_courier'] = CC_Courier_Registry::sanitize($values['default_courier']);
 		CC_Settings::update($values);
 		$this->redirect_notice('cc-settings', 'saved');
-	}
-
-	protected function register_pickup()
-	{
-		$api = new CC_Delhivery_API();
-		$res = $api->create_warehouse(
-			array(
-				'name' => CC_Settings::get('pickup_name'),
-				'phone' => CC_Settings::get('pickup_phone'),
-				'address' => CC_Settings::get('pickup_address'),
-				'city' => CC_Settings::get('pickup_city'),
-				'state' => CC_Settings::get('pickup_state'),
-				'pincode' => CC_Settings::get('pickup_pincode'),
-				'country' => CC_Settings::get('pickup_country', 'India'),
-			)
-		);
-		$this->redirect_notice('cc-settings', $res['ok'] ? 'pickup_ok' : 'pickup_fail');
 	}
 
 	protected function store_action()
@@ -135,12 +103,12 @@ class CC_Admin
 		$sub = sanitize_key($_POST['sub_action'] ?? '');
 		$id = (int) ($_POST['store_id'] ?? 0);
 
-		if ('add' === $sub) {
-			$store = CC_Website::connect(
+		if ('generate' === $sub) {
+			$store = CC_Website::generate(
 				array(
 					'store_name' => $_POST['store_name'] ?? '',
-					'store_url' => $_POST['store_url'] ?? '',
-					'callback_url' => $_POST['callback_url'] ?? '',
+					'courier' => sanitize_key($_POST['courier'] ?? 'delhivery'),
+					'courier_mode' => sanitize_key($_POST['courier_mode'] ?? 'manual'),
 				)
 			);
 
@@ -148,6 +116,17 @@ class CC_Admin
 			if (!is_wp_error($store) && $email) {
 				CC_Clients::create_and_link($email, $store->store_name, $store->id);
 			}
+			$this->redirect_notice('cc-websites', is_wp_error($store) ? 'store_error' : 'keys_generated&new_store=' . (is_wp_error($store) ? 0 : $store->id));
+		} elseif ('set_courier' === $sub && $id) {
+			CC_Website::update_courier(
+				$id,
+				sanitize_key($_POST['courier'] ?? 'delhivery'),
+				sanitize_key($_POST['courier_mode'] ?? 'manual')
+			);
+			$this->redirect_notice('cc-websites', 'courier_saved');
+		} elseif ('regen_keys' === $sub && $id) {
+			CC_Website::regenerate_keys($id);
+			$this->redirect_notice('cc-websites', 'keys_generated&new_store=' . $id);
 		} elseif ('assign_client' === $sub && $id) {
 			$email = sanitize_email(wp_unslash($_POST['client_email'] ?? ''));
 			$store = CC_Website::get($id);

@@ -118,7 +118,7 @@ class CC_Delhivery_API
 			'return_country' => $data['country'] ?? 'India',
 		);
 
-		return $this->request(
+		$res = $this->request(
 			'POST',
 			$this->base_url() . '/api/backend/clientwarehouse/create/',
 			array(
@@ -126,6 +126,31 @@ class CC_Delhivery_API
 				'body' => wp_json_encode($payload),
 			)
 		);
+
+		// A warehouse with this name already exists → create/ rejects with 400.
+		// Fall back to the edit endpoint so address changes still go through.
+		if (!$res['ok']) {
+			$edit_payload = array(
+				'name' => $data['name'],
+				'phone' => $data['phone'],
+				'address' => $data['address'],
+				'pin' => $data['pincode'],
+				'registered_name' => $data['name'],
+			);
+			$edit = $this->request(
+				'POST',
+				$this->base_url() . '/api/backend/clientwarehouse/edit/',
+				array(
+					'headers' => $this->headers(array('Content-Type' => 'application/json')),
+					'body' => wp_json_encode($edit_payload),
+				)
+			);
+			if ($edit['ok']) {
+				return $edit;
+			}
+		}
+
+		return $res;
 	}
 
 	public function create_shipment(array $shipment, $pickup_location)
@@ -148,29 +173,58 @@ class CC_Delhivery_API
 
 		$awb = '';
 		$remark = '';
-		$success_all = false;
+		$pkg_ok = false;
 
 		if (is_array($res['body'])) {
-			$success_all = !empty($res['body']['success']);
 			if (!empty($res['body']['packages'][0])) {
 				$pkg = $res['body']['packages'][0];
 				$awb = $pkg['waybill'] ?? '';
-				$remark = is_array($pkg['remarks'] ?? '') ? implode('; ', $pkg['remarks']) : (string) ($pkg['remarks'] ?? '');
-				if (empty($pkg['status']) || in_array(strtolower((string) ($pkg['status'] ?? '')), array('fail', 'failure'), true)) {
-					$success_all = $success_all && !empty($awb);
-				}
+				$remark = is_array($pkg['remarks'] ?? '') ? implode('; ', array_filter((array) $pkg['remarks'])) : (string) ($pkg['remarks'] ?? '');
+
+				// Delhivery returns the pre-allocated waybill even when the package
+				// FAILS (e.g. non-serviceable pincode) — an AWB alone is not success.
+				// The package must not be marked Fail and must be serviceable.
+				$status = strtolower((string) ($pkg['status'] ?? ''));
+				$not_failed = !in_array($status, array('fail', 'failure'), true);
+				$serviceable = !array_key_exists('serviceable', $pkg) || false !== $pkg['serviceable'];
+				$pkg_ok = $not_failed && $serviceable;
 			}
-			if ('' === $awb && !empty($res['body']['rmk'])) {
+			if ('' === $remark && !empty($res['body']['rmk'])) {
 				$remark = $res['body']['rmk'];
 			}
 		}
 
 		return array(
-			'ok' => ($res['ok'] && '' !== $awb),
+			'ok' => ($res['ok'] && $pkg_ok && '' !== $awb),
 			'awb' => $awb,
-			'remark' => $remark,
+			'remark' => self::friendly_remark($remark),
 			'body' => $res['body'],
 		);
+	}
+
+	/**
+	 * Translate Delhivery's raw rejection remarks into messages an admin can
+	 * actually act on. The raw response stays in the Logs page.
+	 */
+	protected static function friendly_remark($remark)
+	{
+		$r = strtolower((string) $remark);
+		if ('' === $r) {
+			return $remark;
+		}
+		if (false !== strpos($r, 'insufficient balance')) {
+			return 'Delhivery wallet balance is empty — recharge your Delhivery account (one.delhivery.com → Billing/Wallet), then push this order again.';
+		}
+		if (false !== strpos($r, 'non serviceable pincode') || false !== strpos($r, 'non-serviceable')) {
+			if (preg_match('/(\d{6})/', (string) $remark, $m)) {
+				return 'Delhivery does not deliver to pincode ' . $m[1] . ' — the customer\'s delivery pincode is not serviceable.';
+			}
+			return 'The customer\'s delivery pincode is not serviceable by Delhivery.';
+		}
+		if (false !== strpos($r, 'clientwarehouse') || false !== strpos($r, 'pickup location')) {
+			return 'Pickup warehouse problem at Delhivery — ask the client to re-save their Pickup Address in the connector plugin, then push again. (' . $remark . ')';
+		}
+		return $remark;
 	}
 
 	public function track($waybill)

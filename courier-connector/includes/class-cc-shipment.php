@@ -18,9 +18,9 @@ class CC_Shipment
 			return new WP_Error('cc_already', 'Shipment already created. AWB: ' . $order->get_awb());
 		}
 
-		$pickup = CC_Settings::get('pickup_name');
-		if ('' === trim((string) $pickup)) {
-			return new WP_Error('cc_no_pickup', 'Pickup location is not set. Configure it under Courier → Settings.');
+		$pickup = $order->pickup();
+		if ('' === trim((string) ($pickup['pickup_name'] ?? ''))) {
+			return new WP_Error('cc_no_pickup', 'No pickup address for this client yet. The client sets it in their Courier Connector plugin (Pickup Address section).');
 		}
 
 		$key = self::resolve_courier($order, $courier_key);
@@ -35,6 +35,9 @@ class CC_Shipment
 		if (!$result['ok'] || empty($result['awb'])) {
 			$msg = $result['remark'] ? $result['remark'] : $courier->label() . ' rejected the shipment.';
 			$order->add_note('Shipment creation failed (' . $courier->label() . '): ' . $msg);
+			// Surface the reason on the Orders page, not just in the logs.
+			$order->wc()->update_meta_data('_cc_push_error', $msg);
+			$order->wc()->save();
 			return new WP_Error('cc_create_failed', $msg, $result['body']);
 		}
 
@@ -51,6 +54,7 @@ class CC_Shipment
 			)
 		);
 		$order->wc()->update_meta_data('_cc_courier_choice', $key);
+		$order->wc()->delete_meta_data('_cc_push_error');
 		$order->wc()->save();
 		$order->add_note(sprintf('Shipment created with %s. AWB: %s', $courier->label(), $awb));
 
@@ -87,6 +91,14 @@ class CC_Shipment
 		$choice = (string) $order->wc()->get_meta('_cc_courier_choice');
 		if ($choice) {
 			return CC_Courier_Registry::sanitize($choice);
+		}
+		// Client-wise courier assignment from the Naya Setu panel.
+		$store_id = $order->source_store_id();
+		if ($store_id) {
+			$store = CC_Website::get($store_id);
+			if ($store && !empty($store->courier)) {
+				return CC_Courier_Registry::sanitize($store->courier);
+			}
 		}
 		return CC_Courier_Registry::sanitize(CC_Settings::get('default_courier', 'delhivery'));
 	}

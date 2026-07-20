@@ -76,9 +76,10 @@ Dashboard updates + POSTs → client /wp-json/courier/v1/update-tracking
 
 | Method | Endpoint | Auth | Purpose |
 |--------|----------|------|---------|
-| POST | `/connect-store` | open | Register a store, returns `api_key` |
+| POST | `/handshake` | `X-CC-Api-Key` + `X-CC-Api-Secret` | Key-based connect. Keys are generated in the Naya Setu panel (Clients page); the dashboard URL is embedded in the API key (`cc1.<base64url(url)>.<random>`) so the client never enters a URL. Body carries `store_url`, `callback_url` and the client's `pickup` profile. |
+| POST/PUT | `/profile` | `X-CC-Api-Key` | Client pushes its pickup address + parcel size profile |
 | GET  | `/ping` | `X-CC-Api-Key` | Verify connection |
-| POST | `/orders` | `X-CC-Api-Key` | Import an order |
+| POST | `/orders` | `X-CC-Api-Key` | Import an order (courier is assigned per client in the panel — any courier field from the client is ignored; auto-booked when the client is in Automated mode) |
 | PUT  | `/orders/{external_id}` | `X-CC-Api-Key` | Update order status |
 
 Reverse callbacks the dashboard sends to client stores (`courier/v1` on the client):

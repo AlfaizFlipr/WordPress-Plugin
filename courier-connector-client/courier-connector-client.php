@@ -4,17 +4,12 @@ if (!defined('ABSPATH')) {
 	exit;
 }
 
-define('CCC_VERSION', '1.2.0');
+define('CCC_VERSION', '2.0.0');
 
 class CCC_Client
 {
 
 	const OPTION = 'ccc_settings';
-
-	const COURIERS = array(
-		'delhivery' => 'Delhivery',
-		'dtdc' => 'DTDC',
-	);
 
 	private static $instance;
 
@@ -77,7 +72,7 @@ class CCC_Client
 
 	public function is_connected()
 	{
-		return $this->get('dashboard_url') && $this->get('api_key');
+		return $this->get('dashboard_url') && $this->get('api_key') && $this->get('secret_key');
 	}
 
 	public function menu()
@@ -90,6 +85,24 @@ class CCC_Client
 			'ccc-settings',
 			array($this, 'settings_page')
 		);
+	}
+
+	/**
+	 * The Naya Setu API key carries the dashboard address inside it:
+	 * cc1.<base64url(dashboard URL)>.<random>
+	 * so connecting only ever needs the two keys — no URL field.
+	 */
+	public static function decode_dashboard_url($api_key)
+	{
+		$parts = explode('.', trim((string) $api_key));
+		if (3 !== count($parts) || 'cc1' !== $parts[0]) {
+			return '';
+		}
+		$url = base64_decode(strtr($parts[1], '-_', '+/'));
+		if (!$url || !preg_match('#^https?://#i', $url)) {
+			return '';
+		}
+		return untrailingslashit(esc_url_raw($url));
 	}
 
 	public function handle_post()
@@ -113,15 +126,9 @@ class CCC_Client
 			delete_option(self::OPTION);
 			$this->redirect('disconnected=1');
 		}
-		if ('save_courier' === $action) {
+		if ('save_pickup' === $action) {
 			check_admin_referer('ccc_connect');
-			$mode = 'per_order' === ($_POST['courier_mode'] ?? '') ? 'per_order' : 'fixed';
-			$courier = sanitize_key(wp_unslash($_POST['fixed_courier'] ?? ''));
-			if (!isset(self::COURIERS[$courier])) {
-				$courier = 'delhivery';
-			}
-			$this->set(array('courier_mode' => $mode, 'fixed_courier' => $courier));
-			$this->redirect('courier_saved=1');
+			$this->save_pickup();
 		}
 	}
 
@@ -147,7 +154,7 @@ class CCC_Client
 			'ok' => false,
 			'code' => 0,
 			'body' => null,
-			'error' => 'No response from dashboard.',
+			'error' => 'No response from Naya Setu.',
 		);
 
 		foreach ($endpoints as $url) {
@@ -179,72 +186,109 @@ class CCC_Client
 		return $last;
 	}
 
-	protected function probe_dashboard($dashboard)
+	protected function auth_headers()
 	{
-		$dashboard = untrailingslashit($dashboard);
-		$out = array();
+		return array(
+			'X-CC-Api-Key' => $this->get('api_key'),
+			'X-CC-Api-Secret' => $this->get('secret_key'),
+		);
+	}
 
-		foreach (array('/wp-json/', '/?rest_route=/') as $path) {
-			$res = wp_remote_get(
-				$dashboard . $path,
-				array(
-					'timeout' => 20,
-					'sslverify' => false,
-				)
-			);
+	/**
+	 * Pickup profile: where Naya Setu picks parcels up from this store,
+	 * plus the default parcel size. Prefills from the WooCommerce store
+	 * address until the merchant saves their own values.
+	 */
+	public function pickup_profile()
+	{
+		return array(
+			'pickup_name' => $this->get('pickup_name', get_bloginfo('name')),
+			'pickup_phone' => $this->get('pickup_phone'),
+			'pickup_address' => $this->get('pickup_address', get_option('woocommerce_store_address', '')),
+			'pickup_city' => $this->get('pickup_city', get_option('woocommerce_store_city', '')),
+			'pickup_state' => $this->get('pickup_state'),
+			'pickup_pincode' => $this->get('pickup_pincode', get_option('woocommerce_store_postcode', '')),
+			'pickup_country' => $this->get('pickup_country', 'India'),
+			'default_weight' => $this->get('default_weight', '0.5'),
+			'default_length' => $this->get('default_length', '10'),
+			'default_breadth' => $this->get('default_breadth', '10'),
+			'default_height' => $this->get('default_height', '10'),
+		);
+	}
 
-			if (is_wp_error($res)) {
-				$out[] = $path . ' → cannot reach (' . $res->get_error_message() . ')';
-				continue;
-			}
-
-			$code = (int) wp_remote_retrieve_response_code($res);
-			$json = json_decode(wp_remote_retrieve_body($res), true);
-
-			if (is_array($json) && isset($json['namespaces'])) {
-				$has = in_array('courier/v1', (array) $json['namespaces'], true) ? 'YES ✅' : 'NO ❌ (dashboard plugin not active here)';
-				$out[] = $path . " → REST works (HTTP {$code}). courier/v1 present: {$has}.";
-
-				break;
-			}
-
-			$out[] = $path . " → HTTP {$code}, not a REST index (permalinks/404).";
+	protected function save_pickup()
+	{
+		$fields = array(
+			'pickup_name', 'pickup_phone', 'pickup_address', 'pickup_city',
+			'pickup_state', 'pickup_pincode', 'pickup_country',
+			'default_weight', 'default_length', 'default_breadth', 'default_height',
+		);
+		$values = array();
+		foreach ($fields as $f) {
+			$values[$f] = sanitize_text_field(wp_unslash($_POST[$f] ?? ''));
 		}
+		$this->set($values);
 
-		return implode('  |  ', $out);
+		// Push the fresh pickup profile to Naya Setu right away.
+		if ($this->is_connected()) {
+			$res = $this->rest_request(
+				$this->get('dashboard_url'),
+				'profile',
+				'POST',
+				array('pickup' => $this->pickup_profile()),
+				$this->auth_headers()
+			);
+			if (!$res['ok']) {
+				update_option('ccc_last_error', 'Pickup saved locally, but syncing to Naya Setu failed: ' . $res['error']);
+				$this->redirect('pickup_saved=1&pickup_sync=0');
+			}
+		}
+		delete_option('ccc_last_error');
+		$this->redirect('pickup_saved=1');
 	}
 
 	protected function connect()
 	{
-		$dashboard = untrailingslashit(esc_url_raw($_POST['dashboard_url'] ?? ''));
+		$api_key = sanitize_text_field(wp_unslash($_POST['api_key'] ?? ''));
+		$secret_key = sanitize_text_field(wp_unslash($_POST['secret_key'] ?? ''));
+
+		$dashboard = self::decode_dashboard_url($api_key);
 		if (!$dashboard) {
-			update_option('ccc_last_error', 'No dashboard URL was entered.');
-			$this->redirect('error=url');
+			update_option('ccc_last_error', 'That API key does not look like a Naya Setu key (expected format: cc1.xxxx.xxxx). Copy it exactly from the Naya Setu panel → Clients.');
+			$this->redirect('error=key');
+		}
+		if (!$secret_key) {
+			update_option('ccc_last_error', 'The Secret Key is required.');
+			$this->redirect('error=key');
 		}
 
 		$res = $this->rest_request(
 			$dashboard,
-			'connect-store',
+			'handshake',
 			'POST',
 			array(
 				'store_name' => get_bloginfo('name'),
 				'store_url' => home_url(),
 				'callback_url' => rest_url('courier/v1/'),
+				'pickup' => $this->pickup_profile(),
+			),
+			array(
+				'X-CC-Api-Key' => $api_key,
+				'X-CC-Api-Secret' => $secret_key,
 			)
 		);
 
-		if (!$res['ok'] || empty($res['body']['api_key'])) {
-			$msg = $res['error'] ? $res['error'] : 'Unexpected response (HTTP ' . $res['code'] . ').';
-			$msg .= ' — Diagnostic: ' . $this->probe_dashboard($dashboard);
-			update_option('ccc_last_error', $msg);
+		if (!$res['ok'] || empty($res['body']['store_id'])) {
+			update_option('ccc_last_error', $res['error'] ? $res['error'] : 'Unexpected response (HTTP ' . $res['code'] . ').');
 			$this->redirect('error=connect');
 		}
 
 		$this->set(
 			array(
 				'dashboard_url' => $dashboard,
-				'api_key' => $res['body']['api_key'],
-				'store_id' => $res['body']['store_id'] ?? 0,
+				'api_key' => $api_key,
+				'secret_key' => $secret_key,
+				'store_id' => $res['body']['store_id'],
 			)
 		);
 		delete_option('ccc_last_error');
@@ -260,13 +304,14 @@ class CCC_Client
 	public function settings_page()
 	{
 		$connected = $this->is_connected();
+		$pickup = $this->pickup_profile();
 		?>
 		<div class="wrap ccc-wrap">
 			<h1 class="ccc-h1"><span class="ccc-logo">NS</span> Courier Connector — Client</h1>
 
 			<?php if (isset($_GET['connected'])): ?>
 				<div class="notice notice-success">
-					<p>Store connected successfully!</p>
+					<p>Store connected to Naya Setu successfully!</p>
 				</div>
 			<?php elseif (isset($_GET['disconnected'])): ?>
 				<div class="notice notice-warning">
@@ -274,54 +319,62 @@ class CCC_Client
 				</div>
 			<?php elseif (isset($_GET['synced'])): ?>
 				<div class="notice notice-success">
-					<p><?php echo (int) $_GET['synced']; ?> orders synced to the dashboard.</p>
+					<p><?php echo (int) $_GET['synced']; ?> orders synced to Naya Setu.</p>
 				</div>
-			<?php elseif (isset($_GET['courier_saved'])): ?>
-				<div class="notice notice-success">
-					<p>Delivery partner settings saved.</p>
-				</div>
+			<?php elseif (isset($_GET['pickup_saved'])): ?>
+				<?php if (isset($_GET['pickup_sync']) && '0' === $_GET['pickup_sync']): ?>
+					<div class="notice notice-warning">
+						<p><?php echo esc_html(get_option('ccc_last_error', 'Pickup saved, but could not sync to Naya Setu.')); ?></p>
+					</div>
+				<?php else: ?>
+					<div class="notice notice-success">
+						<p>Pickup address &amp; parcel settings saved<?php echo $connected ? ' and synced to Naya Setu' : ''; ?>.</p>
+					</div>
+				<?php endif; ?>
 			<?php elseif (isset($_GET['error'])): ?>
 				<div class="notice notice-error">
 					<p><strong>Could not connect.</strong>
-						<?php echo esc_html(get_option('ccc_last_error', 'Check the dashboard URL and that the dashboard plugin is active.')); ?>
+						<?php echo esc_html(get_option('ccc_last_error', 'Check the API key and secret key.')); ?>
 					</p>
-					<p>Tips: use the full URL like <code>http://localhost/wordpress</code> (no <code>/wp-admin</code>), and make
-						sure the <em>Naya Setu Courier — Dashboard</em> plugin is active on that site.</p>
+					<p>Get your keys from the Naya Setu panel → <strong>Clients</strong> → your store row. Paste both
+						exactly — the connection is automatic, no URL needed.</p>
 				</div>
 			<?php endif; ?>
 
 			<div class="ccc-panel">
 				<?php if (!$connected): ?>
-					<h2><span class="dashicons dashicons-admin-links"></span> Connect your store in 2 minutes</h2>
-					<p class="ccc-sub">Enter your Naya Setu dashboard URL (the site root, not the admin page). We'll register this
-						store and pull the API key automatically.</p>
+					<h2><span class="dashicons dashicons-admin-network"></span> Connect with your Naya Setu keys</h2>
+					<p class="ccc-sub">Paste the <strong>API Key</strong> and <strong>Secret Key</strong> given to you by
+						Naya Setu. That's all — the connection is automatic.</p>
 					<form method="post">
 						<?php wp_nonce_field('ccc_connect'); ?>
 						<input type="hidden" name="ccc_action" value="connect" />
 						<div class="ccc-field">
-							<label for="ccc_dashboard_url">Dashboard URL</label>
-							<input type="url" id="ccc_dashboard_url" name="dashboard_url" value="http://localhost/wordpress"
-								required />
-							<p class="ccc-help">Example: <code>http://localhost/wordpress</code> — the dashboard site's home URL.
-							</p>
+							<label for="ccc_api_key">API Key</label>
+							<input type="text" id="ccc_api_key" name="api_key" placeholder="cc1.xxxxxxxx.xxxxxxxx" required />
 						</div>
-						<button class="ccc-btn ccc-btn-primary">Connect Store</button>
+						<div class="ccc-field">
+							<label for="ccc_secret_key">Secret Key</label>
+							<input type="password" id="ccc_secret_key" name="secret_key" placeholder="ccs_xxxxxxxx"
+								autocomplete="new-password" required />
+						</div>
+						<button class="ccc-btn ccc-btn-primary">Connect to Naya Setu</button>
 					</form>
 				<?php else: ?>
-					<h2><span class="dashicons dashicons-admin-links"></span> Connection <span
+					<h2><span class="dashicons dashicons-admin-network"></span> Connection <span
 							class="ccc-status ccc-status-ok">Connected</span></h2>
 					<table class="ccc-kv">
 						<tr>
-							<th>Dashboard</th>
-							<td><code><?php echo esc_html($this->get('dashboard_url')); ?></code></td>
-						</tr>
-						<tr>
-							<th>Store ID</th>
+							<th>Client ID</th>
 							<td><?php echo esc_html($this->get('store_id')); ?></td>
 						</tr>
 						<tr>
 							<th>API Key</th>
-							<td><code><?php echo esc_html(substr($this->get('api_key'), 0, 12)); ?>…</code></td>
+							<td><code><?php echo esc_html(substr($this->get('api_key'), 0, 16)); ?>…</code></td>
+						</tr>
+						<tr>
+							<th>Delivery partner</th>
+							<td>Assigned &amp; managed by Naya Setu for every order.</td>
 						</tr>
 					</table>
 
@@ -345,38 +398,80 @@ class CCC_Client
 				<?php endif; ?>
 			</div>
 
-			<?php if ($connected): ?>
-				<div class="ccc-panel">
-					<h2><span class="dashicons dashicons-car"></span> Delivery Partner</h2>
-					<p class="ccc-sub">Choose whether every order automatically ships with one fixed courier, or whether you pick
-						the courier yourself on each order (from the order edit screen).</p>
-					<form method="post">
-						<?php wp_nonce_field('ccc_connect'); ?>
-						<input type="hidden" name="ccc_action" value="save_courier" />
-						<div class="ccc-mode-cards">
-							<label class="ccc-mode-card">
-								<input type="radio" name="courier_mode" value="fixed" <?php checked($this->get('courier_mode', 'fixed'), 'fixed'); ?> />
-								<span><strong>Fixed partner</strong><span>Every order automatically ships with the partner
-										below.</span></span>
-							</label>
-							<label class="ccc-mode-card">
-								<input type="radio" name="courier_mode" value="per_order" <?php checked($this->get('courier_mode', 'fixed'), 'per_order'); ?> />
-								<span><strong>Per-order selection</strong><span>Pick a courier on each order before sending it, from
-										the order edit screen.</span></span>
-							</label>
+			<div class="ccc-panel">
+				<h2><span class="dashicons dashicons-location"></span> Pickup Address &amp; Parcel</h2>
+				<p class="ccc-sub">Naya Setu picks your parcels up at this address and delivers them to your customers.
+					Set the address and your usual parcel size here — it syncs to Naya Setu automatically.</p>
+				<form method="post">
+					<?php wp_nonce_field('ccc_connect'); ?>
+					<input type="hidden" name="ccc_action" value="save_pickup" />
+					<div class="ccc-grid-2">
+						<div class="ccc-field">
+							<label for="ccc_pickup_name">Pickup / business name</label>
+							<input type="text" id="ccc_pickup_name" name="pickup_name"
+								value="<?php echo esc_attr($pickup['pickup_name']); ?>" required />
 						</div>
 						<div class="ccc-field">
-							<label for="ccc_fixed_courier">Fixed / default partner</label>
-							<select name="fixed_courier" id="ccc_fixed_courier">
-								<?php foreach (self::COURIERS as $key => $label): ?>
-									<option value="<?php echo esc_attr($key); ?>" <?php selected($this->get('fixed_courier', 'delhivery'), $key); ?>><?php echo esc_html($label); ?></option>
-								<?php endforeach; ?>
-							</select>
+							<label for="ccc_pickup_phone">Phone</label>
+							<input type="text" id="ccc_pickup_phone" name="pickup_phone"
+								value="<?php echo esc_attr($pickup['pickup_phone']); ?>" required />
 						</div>
-						<button class="ccc-btn ccc-btn-primary">Save</button>
-					</form>
-				</div>
-			<?php endif; ?>
+					</div>
+					<div class="ccc-field">
+						<label for="ccc_pickup_address">Address</label>
+						<input type="text" id="ccc_pickup_address" name="pickup_address"
+							value="<?php echo esc_attr($pickup['pickup_address']); ?>" required />
+					</div>
+					<div class="ccc-grid-2">
+						<div class="ccc-field">
+							<label for="ccc_pickup_city">City</label>
+							<input type="text" id="ccc_pickup_city" name="pickup_city"
+								value="<?php echo esc_attr($pickup['pickup_city']); ?>" required />
+						</div>
+						<div class="ccc-field">
+							<label for="ccc_pickup_state">State</label>
+							<input type="text" id="ccc_pickup_state" name="pickup_state"
+								value="<?php echo esc_attr($pickup['pickup_state']); ?>" required />
+						</div>
+					</div>
+					<div class="ccc-grid-2">
+						<div class="ccc-field">
+							<label for="ccc_pickup_pincode">Pincode</label>
+							<input type="text" id="ccc_pickup_pincode" name="pickup_pincode"
+								value="<?php echo esc_attr($pickup['pickup_pincode']); ?>" required />
+						</div>
+						<div class="ccc-field">
+							<label for="ccc_pickup_country">Country</label>
+							<input type="text" id="ccc_pickup_country" name="pickup_country"
+								value="<?php echo esc_attr($pickup['pickup_country']); ?>" />
+						</div>
+					</div>
+					<h3 style="margin:16px 0 4px">Default parcel size</h3>
+					<div class="ccc-grid-4">
+						<div class="ccc-field">
+							<label for="ccc_default_weight">Weight (kg)</label>
+							<input type="text" id="ccc_default_weight" name="default_weight"
+								value="<?php echo esc_attr($pickup['default_weight']); ?>" />
+						</div>
+						<div class="ccc-field">
+							<label for="ccc_default_length">Length (cm)</label>
+							<input type="text" id="ccc_default_length" name="default_length"
+								value="<?php echo esc_attr($pickup['default_length']); ?>" />
+						</div>
+						<div class="ccc-field">
+							<label for="ccc_default_breadth">Breadth (cm)</label>
+							<input type="text" id="ccc_default_breadth" name="default_breadth"
+								value="<?php echo esc_attr($pickup['default_breadth']); ?>" />
+						</div>
+						<div class="ccc-field">
+							<label for="ccc_default_height">Height (cm)</label>
+							<input type="text" id="ccc_default_height" name="default_height"
+								value="<?php echo esc_attr($pickup['default_height']); ?>" />
+						</div>
+					</div>
+					<button class="ccc-btn ccc-btn-primary">Save &amp; Sync to Naya Setu</button>
+				</form>
+			</div>
 		</div>
 		<?php
 	}
@@ -394,11 +489,8 @@ class CCC_Client
 			);
 		}
 
-		$courier = $order->get_meta('_ccc_courier');
-		if (!$courier || !isset(self::COURIERS[$courier])) {
-			$courier = $this->get('fixed_courier', 'delhivery');
-		}
-
+		// No courier field — the delivery partner is assigned per client
+		// inside the Naya Setu panel, never from this store.
 		return array(
 			'external_order_id' => (string) $order->get_id(),
 			'customer' => trim($order->get_billing_first_name() . ' ' . $order->get_billing_last_name()),
@@ -407,7 +499,6 @@ class CCC_Client
 			'total' => (float) $order->get_total(),
 			'payment_method' => $order->get_payment_method(),
 			'status' => $order->get_status(),
-			'courier' => $courier,
 			'billing' => array(
 				'first_name' => $order->get_billing_first_name(),
 				'address_1' => $order->get_billing_address_1(),
@@ -428,14 +519,6 @@ class CCC_Client
 		if (!$this->is_connected()) {
 			return;
 		}
-		if ('per_order' === $this->get('courier_mode', 'fixed')) {
-			return;
-		}
-		$order = wc_get_order($order_id);
-		if ($order && !$order->get_meta('_ccc_courier')) {
-			$order->update_meta_data('_ccc_courier', $this->get('fixed_courier', 'delhivery'));
-			$order->save();
-		}
 		$this->sync_order($order_id);
 	}
 
@@ -454,7 +537,7 @@ class CCC_Client
 			'orders',
 			'POST',
 			$this->order_payload($order),
-			array('X-CC-Api-Key' => $this->get('api_key'))
+			$this->auth_headers()
 		);
 
 		if ($res['ok']) {
@@ -475,7 +558,7 @@ class CCC_Client
 			'orders/' . $order_id,
 			'PUT',
 			array('status' => $to),
-			array('X-CC-Api-Key' => $this->get('api_key'))
+			$this->auth_headers()
 		);
 	}
 
@@ -538,7 +621,7 @@ class CCC_Client
 		$order->update_meta_data('_courier_name', sanitize_text_field($p['courier'] ?? 'Delhivery'));
 		$order->update_meta_data('_tracking_url', esc_url_raw($p['tracking_url'] ?? ''));
 		$order->update_meta_data('_shipment_status', sanitize_text_field($p['status'] ?? ''));
-		$order->add_order_note(sprintf('Shipment booked. AWB: %s (%s)', $p['awb'] ?? '', $p['courier'] ?? 'Delhivery'));
+		$order->add_order_note(sprintf('Shipment booked by Naya Setu. AWB: %s (%s)', $p['awb'] ?? '', $p['courier'] ?? 'Delhivery'));
 		$order->save();
 		return new WP_REST_Response(array('success' => true), 200);
 	}
@@ -583,7 +666,7 @@ class CCC_Client
 		$screen = function_exists('wc_get_page_screen_id') ? wc_get_page_screen_id('shop-order') : 'shop_order';
 		add_meta_box(
 			'ccc_courier_box',
-			'Courier Connector',
+			'Naya Setu Shipping',
 			array($this, 'render_courier_box'),
 			$screen,
 			'side',
@@ -599,24 +682,18 @@ class CCC_Client
 		}
 
 		if (!$this->is_connected()) {
-			echo '<p>Connect this store to the dashboard under <strong>WooCommerce → Courier Connector</strong> first.</p>';
+			echo '<p>Connect this store to Naya Setu under <strong>WooCommerce → Courier Connector</strong> first.</p>';
 			return;
 		}
 
 		$synced = $order->get_meta('_ccc_synced');
-		$courier = $order->get_meta('_ccc_courier');
-		if (!$courier || !isset(self::COURIERS[$courier])) {
-			$courier = $this->get('fixed_courier', 'delhivery');
-		}
-		$mode = $this->get('courier_mode', 'fixed');
-		$courier_cls = 'dtdc' === $courier ? 'ccc-courier-dtdc' : 'ccc-courier-delhivery';
 
 		echo '<div class="ccc-box ccc-wrap">';
 
 		if ($synced) {
 			echo '<div class="ccc-box-synced">';
-			echo '<p><strong>✅ Sent to dashboard</strong></p>';
-			echo '<p><span class="ccc-courier-badge ' . esc_attr($courier_cls) . '">' . esc_html(self::COURIERS[$courier] ?? $courier) . '</span></p>';
+			echo '<p><strong>✅ Sent to Naya Setu</strong></p>';
+			echo '<p class="ccc-box-note">The delivery partner is chosen by Naya Setu for your account.</p>';
 			echo '</div>';
 			echo '<p class="ccc-box-time">' . esc_html($synced) . '</p>';
 		} else {
@@ -624,16 +701,8 @@ class CCC_Client
 			wp_nonce_field('ccc_send_order_' . $order->get_id());
 			echo '<input type="hidden" name="action" value="ccc_send_order" />';
 			echo '<input type="hidden" name="order_id" value="' . esc_attr($order->get_id()) . '" />';
-			echo '<div class="ccc-field"><label for="ccc_courier">Delivery Partner</label>';
-			echo '<select name="courier" id="ccc_courier">';
-			foreach (self::COURIERS as $key => $label) {
-				echo '<option value="' . esc_attr($key) . '" ' . selected($courier, $key, false) . '>' . esc_html($label) . '</option>';
-			}
-			echo '</select></div>';
-			if ('fixed' === $mode) {
-				echo '<p class="ccc-box-note">Fixed-partner mode is on, so this order will auto-send shortly — you can also send it now.</p>';
-			}
-			echo '<button type="submit" class="ccc-btn ccc-btn-primary ccc-btn-block">Send to Dashboard</button>';
+			echo '<p class="ccc-box-note">New orders send automatically. The delivery partner (Delhivery / DTDC) is assigned by Naya Setu.</p>';
+			echo '<button type="submit" class="ccc-btn ccc-btn-primary ccc-btn-block">Send to Naya Setu</button>';
 			echo '</form>';
 		}
 
@@ -650,12 +719,6 @@ class CCC_Client
 
 		$order = wc_get_order($order_id);
 		if ($order) {
-			$courier = sanitize_key(wp_unslash($_POST['courier'] ?? ''));
-			if (!isset(self::COURIERS[$courier])) {
-				$courier = $this->get('fixed_courier', 'delhivery');
-			}
-			$order->update_meta_data('_ccc_courier', $courier);
-			$order->save();
 			$this->sync_order($order_id);
 		}
 

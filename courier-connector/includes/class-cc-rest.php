@@ -18,11 +18,21 @@ class CC_REST
 	{
 		register_rest_route(
 			self::NS,
-			'/connect-store',
+			'/handshake',
 			array(
 				'methods' => 'POST',
-				'callback' => array($this, 'connect_store'),
+				'callback' => array($this, 'handshake'),
 				'permission_callback' => '__return_true',
+			)
+		);
+
+		register_rest_route(
+			self::NS,
+			'/profile',
+			array(
+				'methods' => array('POST', 'PUT'),
+				'callback' => array($this, 'update_profile'),
+				'permission_callback' => array($this, 'auth'),
 			)
 		);
 
@@ -84,13 +94,25 @@ class CC_REST
 		return true;
 	}
 
-	public function connect_store(WP_REST_Request $request)
+	/**
+	 * Key + secret based connection. The client plugin decodes this dashboard's
+	 * URL from the API key itself, then calls here with both keys to link up.
+	 * URL-based open registration is gone — keys are generated only from the
+	 * Naya Setu panel.
+	 */
+	public function handshake(WP_REST_Request $request)
 	{
-		$store = CC_Website::connect(
+		$api_key = $request->get_header('x_cc_api_key') ?: $request->get_param('api_key');
+		$secret = $request->get_header('x_cc_api_secret') ?: $request->get_param('secret_key');
+
+		$store = CC_Website::handshake(
+			(string) $api_key,
+			(string) $secret,
 			array(
 				'store_name' => $request->get_param('store_name'),
 				'store_url' => $request->get_param('store_url'),
 				'callback_url' => $request->get_param('callback_url'),
+				'pickup' => $request->get_param('pickup'),
 			)
 		);
 
@@ -100,17 +122,71 @@ class CC_REST
 					'success' => false,
 					'message' => $store->get_error_message(),
 				),
-				400
+				401
 			);
 		}
+
+		self::register_pickup_warehouse($store);
+		CC_Logger::log('rest', 'Client connected via key handshake: store #' . $store->id, array('url' => $store->store_url));
 
 		return new WP_REST_Response(
 			array(
 				'success' => true,
 				'store_id' => (int) $store->id,
-				'api_key' => $store->api_key,
+				'store_name' => $store->store_name,
+				'courier' => $store->courier,
+				'courier_mode' => $store->courier_mode,
 			),
 			200
+		);
+	}
+
+	/**
+	 * Client pushes its pickup address / parcel profile (on settings save).
+	 */
+	public function update_profile(WP_REST_Request $request)
+	{
+		$store = $request->get_param('_cc_store');
+		$p = $request->get_json_params();
+
+		if (!empty($p['pickup']) && is_array($p['pickup'])) {
+			CC_Website::update_pickup($store->id, $p['pickup']);
+		}
+
+		$store = CC_Website::get($store->id);
+		self::register_pickup_warehouse($store);
+		CC_Logger::log('rest', 'Pickup profile updated for store #' . $store->id, $p['pickup'] ?? array());
+
+		return new WP_REST_Response(array('success' => true), 200);
+	}
+
+	/**
+	 * Delhivery needs every pickup point registered as a warehouse before it
+	 * can be used on a shipment — do it automatically whenever a client sends
+	 * its pickup address.
+	 */
+	protected static function register_pickup_warehouse($store)
+	{
+		if ('' === trim((string) CC_Settings::get('api_token'))) {
+			return;
+		}
+		$pickup = CC_Website::pickup($store);
+		if ('' === trim((string) $pickup['pickup_name']) || '' === trim((string) $pickup['pickup_pincode'])) {
+			return;
+		}
+		$api = new CC_Delhivery_API();
+		$api->create_warehouse(
+			array(
+				// Unique per client — two clients with the same shop name must
+				// not overwrite each other's Delhivery warehouse.
+				'name' => CC_Website::warehouse_name($store),
+				'phone' => $pickup['pickup_phone'],
+				'address' => $pickup['pickup_address'],
+				'city' => $pickup['pickup_city'],
+				'state' => $pickup['pickup_state'],
+				'pincode' => $pickup['pickup_pincode'],
+				'country' => $pickup['pickup_country'] ?: 'India',
+			)
 		);
 	}
 
@@ -195,7 +271,9 @@ class CC_REST
 			$order->calculate_totals();
 		}
 
-		$courier_choice = CC_Courier_Registry::sanitize($p['courier'] ?? '', CC_Settings::get('default_courier', 'delhivery'));
+		// Courier is decided ONLY by the Naya Setu panel (per-client assignment).
+		// Any courier value sent by the client plugin is ignored.
+		$courier_choice = CC_Courier_Registry::sanitize($store->courier ?? '', CC_Settings::get('default_courier', 'delhivery'));
 
 		$order->update_meta_data('_cc_source_store', (int) $store->id);
 		$order->update_meta_data('_cc_external_order_id', $external_id);
@@ -207,7 +285,8 @@ class CC_REST
 		CC_Website::bump_sync($store->id);
 		CC_Logger::log('rest', 'Imported order from store #' . $store->id, array('external' => $external_id, 'order_id' => $order->get_id()));
 
-		if ('1' === CC_Settings::get('auto_push_on_receive') && CC_Courier_Registry::get($courier_choice)->is_configured()) {
+		// Automated mode is a per-client switch set in the Naya Setu panel.
+		if ('auto' === ($store->courier_mode ?? '') && CC_Courier_Registry::get($courier_choice)->is_configured()) {
 			$push = CC_Shipment::push($order->get_id());
 			if (!is_wp_error($push)) {
 				return new WP_REST_Response(

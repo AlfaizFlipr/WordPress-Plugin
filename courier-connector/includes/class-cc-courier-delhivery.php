@@ -31,7 +31,9 @@ class CC_Courier_Delhivery implements CC_Courier_Interface
 
 	public function create_shipment(CC_Order $order)
 	{
-		$pickup = CC_Settings::get('pickup_name');
+		// Pickup location = the client store's own registered Delhivery
+		// warehouse (unique per client, see CC_Website::warehouse_name()).
+		$pickup = $order->pickup_location_name();
 		$shipment = $order->to_delhivery_shipment();
 
 		$waybill = $this->api->fetch_waybill(1);

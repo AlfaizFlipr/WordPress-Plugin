@@ -320,6 +320,44 @@
       $(".cc-row-check").prop("checked", this.checked);
     });
 
+    $(document).on("click", ".cc-copy", function () {
+      var $btn = $(this),
+        text = String($btn.data("copy") || "");
+      if (!text) return;
+
+      function flash() {
+        var old = $btn.html();
+        $btn.addClass("cc-copied").html("✓ Copied");
+        toast("Copied to clipboard.", "ok");
+        setTimeout(function () {
+          $btn.removeClass("cc-copied").html(old);
+        }, 1600);
+      }
+
+      if (navigator.clipboard && window.isSecureContext) {
+        navigator.clipboard.writeText(text).then(flash, function () {
+          fallbackCopy(text, flash);
+        });
+      } else {
+        fallbackCopy(text, flash);
+      }
+    });
+
+    function fallbackCopy(text, done) {
+      var $ta = $("<textarea>")
+        .val(text)
+        .css({ position: "fixed", left: "-9999px" })
+        .appendTo("body");
+      $ta[0].select();
+      try {
+        document.execCommand("copy");
+        done();
+      } catch (e) {
+        toast("Copy failed — select the key manually.", "err");
+      }
+      $ta.remove();
+    }
+
     $(document).on("click", ".cc-tab-btn", function () {
       var tab = $(this).data("tab");
       $(".cc-tab-btn").removeClass("active");

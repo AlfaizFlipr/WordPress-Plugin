@@ -94,6 +94,35 @@ class CC_Order
 		$this->order->add_order_note('[Courier] ' . $note);
 	}
 
+	/**
+	 * Pickup address + parcel profile for this order's client store.
+	 * Every client sets its own pickup point in the connector plugin;
+	 * Naya Setu picks the parcel up there and ships to the customer.
+	 */
+	public function pickup()
+	{
+		$store_id = (int) $this->order->get_meta('_cc_source_store');
+		return CC_Website::pickup($store_id);
+	}
+
+	public function source_store_id()
+	{
+		return (int) $this->order->get_meta('_cc_source_store');
+	}
+
+	/**
+	 * The registered Delhivery warehouse name for this order's pickup —
+	 * unique per client store (see CC_Website::warehouse_name()).
+	 */
+	public function pickup_location_name()
+	{
+		$store_id = $this->source_store_id();
+		if ($store_id) {
+			return CC_Website::warehouse_name($store_id);
+		}
+		return (string) CC_Settings::get('pickup_name');
+	}
+
 	public function is_cod()
 	{
 		return 'cod' === $this->order->get_payment_method();
@@ -140,6 +169,8 @@ class CC_Order
 			$address = trim($o->get_billing_address_1() . ' ' . $o->get_billing_address_2());
 		}
 
+		$pickup = $this->pickup();
+
 		return array(
 			'name' => $name,
 			'add' => $address,
@@ -148,16 +179,16 @@ class CC_Order
 			'pin' => $o->get_shipping_postcode() ?: $o->get_billing_postcode(),
 			'products_desc' => implode(', ', $products),
 			'quantity' => $quantity,
-			'weight' => max(1, (int) round((float) CC_Settings::get('default_weight', '0.5') * 1000)),
-			'shipment_length' => (float) CC_Settings::get('default_length', '10'),
-			'shipment_width' => (float) CC_Settings::get('default_breadth', '10'),
-			'shipment_height' => (float) CC_Settings::get('default_height', '10'),
+			'weight' => max(1, (int) round((float) $pickup['default_weight'] * 1000)),
+			'shipment_length' => (float) $pickup['default_length'],
+			'shipment_width' => (float) $pickup['default_breadth'],
+			'shipment_height' => (float) $pickup['default_height'],
 			'payment_mode' => $this->is_cod() ? 'COD' : 'Prepaid',
 			'total_amount' => (float) $o->get_total(),
-			'seller_name' => CC_Settings::get('pickup_name'),
-			'seller_city' => CC_Settings::get('pickup_city'),
-			'seller_state' => CC_Settings::get('pickup_state'),
-			'seller_pin' => CC_Settings::get('pickup_pincode'),
+			'seller_name' => $pickup['pickup_name'],
+			'seller_city' => $pickup['pickup_city'],
+			'seller_state' => $pickup['pickup_state'],
+			'seller_pin' => $pickup['pickup_pincode'],
 		);
 	}
 
@@ -190,7 +221,8 @@ class CC_Order
 		}
 		$quantity = max(1, $quantity);
 
-		$weight_grams = max(1, (int) round((float) CC_Settings::get('default_weight', '0.5') * 1000));
+		$pickup = $this->pickup();
+		$weight_grams = max(1, (int) round((float) $pickup['default_weight'] * 1000));
 
 		$name = trim($o->get_shipping_first_name() . ' ' . $o->get_shipping_last_name());
 		if ('' === $name) {
@@ -202,12 +234,12 @@ class CC_Order
 			$address = trim($o->get_billing_address_1() . ' ' . $o->get_billing_address_2());
 		}
 
-		$pickup_name = CC_Settings::get('pickup_name');
-		$pickup_address = CC_Settings::get('pickup_address');
-		$pickup_city = CC_Settings::get('pickup_city');
-		$pickup_state = CC_Settings::get('pickup_state');
-		$pickup_pincode = CC_Settings::get('pickup_pincode');
-		$pickup_phone = CC_Settings::get('pickup_phone');
+		$pickup_name = $pickup['pickup_name'];
+		$pickup_address = $pickup['pickup_address'];
+		$pickup_city = $pickup['pickup_city'];
+		$pickup_state = $pickup['pickup_state'];
+		$pickup_pincode = $pickup['pickup_pincode'];
+		$pickup_phone = $pickup['pickup_phone'];
 
 		return array(
 			'name' => $name,
@@ -224,9 +256,9 @@ class CC_Order
 			'products_desc' => implode(', ', $products),
 			'quantity' => $quantity,
 			'weight' => $weight_grams,
-			'shipment_width' => (float) CC_Settings::get('default_breadth', '10'),
-			'shipment_height' => (float) CC_Settings::get('default_height', '10'),
-			'shipment_length' => (float) CC_Settings::get('default_length', '10'),
+			'shipment_width' => (float) $pickup['default_breadth'],
+			'shipment_height' => (float) $pickup['default_height'],
+			'shipment_length' => (float) $pickup['default_length'],
 			'seller_name' => $pickup_name,
 			'seller_add' => $pickup_address,
 			'seller_pin' => $pickup_pincode,
@@ -278,12 +310,13 @@ class CC_Order
 			$address = trim($o->get_billing_address_1() . ' ' . $o->get_billing_address_2());
 		}
 
-		$pickup_name = CC_Settings::get('pickup_name');
-		$pickup_address = CC_Settings::get('pickup_address');
-		$pickup_city = CC_Settings::get('pickup_city');
-		$pickup_state = CC_Settings::get('pickup_state');
-		$pickup_pincode = CC_Settings::get('pickup_pincode');
-		$pickup_phone = CC_Settings::get('pickup_phone');
+		$pickup = $this->pickup();
+		$pickup_name = $pickup['pickup_name'];
+		$pickup_address = $pickup['pickup_address'];
+		$pickup_city = $pickup['pickup_city'];
+		$pickup_state = $pickup['pickup_state'];
+		$pickup_pincode = $pickup['pickup_pincode'];
+		$pickup_phone = $pickup['pickup_phone'];
 
 		$is_cod = $this->is_cod();
 
@@ -297,11 +330,11 @@ class CC_Order
 			'cod_collection_mode' => $is_cod ? 'cash' : '',
 			'consignment_type' => CC_Settings::get('dtdc_consignment_type', 'Reverse'),
 			'dimension_unit' => 'cm',
-			'length' => (float) CC_Settings::get('default_length', '10'),
-			'width' => (float) CC_Settings::get('default_breadth', '10'),
-			'height' => (float) CC_Settings::get('default_height', '10'),
+			'length' => (float) $pickup['default_length'],
+			'width' => (float) $pickup['default_breadth'],
+			'height' => (float) $pickup['default_height'],
 			'weight_unit' => 'kg',
-			'weight' => (float) CC_Settings::get('default_weight', '0.5'),
+			'weight' => (float) $pickup['default_weight'],
 			'num_pieces' => $quantity,
 			'declared_value' => (float) $o->get_total(),
 			'commodity_id' => sanitize_title($products[0]) ?: 'general-goods',

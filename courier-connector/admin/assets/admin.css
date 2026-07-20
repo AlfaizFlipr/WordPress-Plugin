@@ -833,6 +833,245 @@
   margin-top: 10px;
 }
 
+.cc-push-error {
+  margin-top: 5px;
+  font-size: 11px;
+  line-height: 1.45;
+  color: #b91c1c;
+  max-width: 220px;
+  cursor: help;
+}
+
+/* ---------- Client cards (Clients page) ---------- */
+.cc-client-list {
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+}
+.cc-client-card {
+  background: #fff;
+  border: 1px solid var(--line);
+  border-radius: 16px;
+  box-shadow: var(--shadow-md);
+  overflow: hidden;
+  transition: box-shadow 0.18s ease;
+}
+.cc-client-card:hover {
+  box-shadow: var(--shadow-lg);
+}
+.cc-client-card-new {
+  border-color: #6ee7b7;
+  box-shadow: 0 0 0 3px rgba(16, 185, 129, 0.15), var(--shadow-md);
+}
+.cc-client-card-disabled {
+  opacity: 0.65;
+}
+.cc-client-head {
+  display: flex;
+  align-items: center;
+  gap: 14px;
+  padding: 16px 20px;
+  border-bottom: 1px solid var(--line);
+  flex-wrap: wrap;
+}
+.cc-client-who {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  min-width: 220px;
+}
+.cc-client-avatar {
+  width: 42px;
+  height: 42px;
+  border-radius: 12px;
+  background: linear-gradient(135deg, var(--teal), var(--teal-dark));
+  color: #fff;
+  font-size: 15px;
+  font-weight: 800;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  flex: none;
+  box-shadow: 0 4px 10px rgba(26, 86, 219, 0.28);
+}
+.cc-client-title {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+  min-width: 0;
+}
+.cc-client-name {
+  font-size: 15px;
+  font-weight: 800;
+  color: var(--navy);
+  letter-spacing: -0.01em;
+}
+.cc-client-sub {
+  font-size: 12px;
+  color: var(--gray);
+}
+.cc-client-sub a {
+  color: var(--teal);
+  text-decoration: none;
+  font-weight: 600;
+}
+.cc-client-sub a:hover {
+  text-decoration: underline;
+}
+.cc-client-flags {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  flex-wrap: wrap;
+}
+.cc-client-head-actions {
+  margin-left: auto;
+}
+.cc-client-head-actions .cc-inline-form {
+  gap: 8px;
+}
+
+.cc-client-keys {
+  padding: 14px 20px;
+  background: #f8fafd;
+  border-bottom: 1px solid var(--line);
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+.cc-keyrow {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+}
+.cc-keyrow-label {
+  flex: none;
+  width: 84px;
+  font-size: 11px;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+  color: var(--gray);
+}
+.cc-keyrow-value {
+  flex: 1;
+  min-width: 0;
+  background: #fff;
+  border: 1px solid var(--line);
+  border-radius: 8px;
+  padding: 8px 12px;
+  font-size: 12.5px;
+  color: var(--navy);
+  overflow-wrap: anywhere;
+  line-height: 1.5;
+}
+.cc-copy {
+  flex: none;
+}
+.cc-copy .dashicons {
+  font-size: 14px;
+  width: 14px;
+  height: 14px;
+}
+.cc-copy.cc-copied,
+.cc-copy.cc-copied:hover {
+  background: #ecfdf5;
+  border-color: #6ee7b7;
+  color: #15803d;
+}
+
+.cc-client-body {
+  display: grid;
+  grid-template-columns: 1.2fr 1fr 1fr;
+  gap: 0;
+}
+.cc-client-cell {
+  padding: 16px 20px;
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start;
+  gap: 6px;
+  border-right: 1px solid var(--line);
+  min-width: 0;
+}
+.cc-client-cell:last-child {
+  border-right: none;
+}
+.cc-cell-label {
+  font-size: 11px;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+  color: var(--gray-light);
+  margin-bottom: 2px;
+}
+.cc-cell-strong {
+  font-size: 13.5px;
+  color: var(--navy);
+}
+.cc-cell-text {
+  font-size: 12.5px;
+  color: var(--navy);
+  line-height: 1.5;
+}
+.cc-cell-muted {
+  color: var(--gray);
+}
+.cc-cell-hint {
+  font-size: 11.5px;
+  color: var(--gray-light);
+  line-height: 1.5;
+}
+.cc-courier-form {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  flex-wrap: wrap;
+  width: 100%;
+}
+.cc-courier-form .cc-input {
+  width: auto;
+  flex: 1;
+  min-width: 120px;
+}
+.cc-linkform {
+  margin-top: 4px;
+}
+.cc-optional {
+  font-weight: 500;
+  color: var(--gray-light);
+  text-transform: none;
+}
+.cc-save-bar .cc-btn .dashicons,
+.cc-btn .dashicons {
+  font-size: 15px;
+  width: 15px;
+  height: 15px;
+}
+
+@media (max-width: 1100px) {
+  .cc-client-body {
+    grid-template-columns: 1fr;
+  }
+  .cc-client-cell {
+    border-right: none;
+    border-bottom: 1px solid var(--line);
+  }
+  .cc-client-cell:last-child {
+    border-bottom: none;
+  }
+  .cc-client-head-actions {
+    margin-left: 0;
+    width: 100%;
+  }
+  .cc-keyrow {
+    flex-wrap: wrap;
+  }
+  .cc-keyrow-label {
+    width: 100%;
+  }
+}
+
 @media (max-width: 1100px) {
   .cc-cards {
     grid-template-columns: repeat(2, 1fr);

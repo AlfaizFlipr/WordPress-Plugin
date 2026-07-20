@@ -55,7 +55,28 @@
       "Bash(curl -s -o /dev/null -w \"Label HTTP: %{http_code}\\\\n\" \"http://localhost/courier-dashboard/wp-content/uploads/cc-labels/dtdc-D1018380816.pdf\")",
       "Bash(\"/c/xampp/mysql/bin/mysql\" -u root -h 127.0.0.1 -P 3306 ns_courier -e \"SELECT ID, post_title, post_status, post_name FROM wp_posts WHERE post_type='page' AND post_content LIKE '%naya_setu_track%';\")",
       "Bash(curl -s -o /dev/null -w \"Delhivery track HTTP: %{http_code}\\\\n\" \"http://localhost/courier-dashboard/shipment-track.php?awb=56535210000162\")",
-      "Bash(curl -s -o /dev/null -w \"DTDC track HTTP: %{http_code}\\\\n\" \"http://localhost/courier-dashboard/shipment-track.php?awb=D1018380816\")"
+      "Bash(curl -s -o /dev/null -w \"DTDC track HTTP: %{http_code}\\\\n\" \"http://localhost/courier-dashboard/shipment-track.php?awb=D1018380816\")",
+      "Bash(\"/c/xampp/mysql/bin/mysql\" -u root -h 127.0.0.1 -P 3306 meezab -e \"SELECT option_name, option_value FROM wp_options WHERE option_name='woocommerce_razorpay_settings';\")",
+      "Bash(\"/c/xampp/mysql/bin/mysql\" -u root -h 127.0.0.1 -P 3306 meezab -e \"SELECT option_value FROM wp_options WHERE option_name='woocommerce_razorpay_settings';\")",
+      "Bash(\"/c/xampp/mysql/bin/mysql\" -u root -h 127.0.0.1 -P 3306 ns_courier -e \"SELECT ID, post_title, post_status, post_name, guid FROM wp_posts WHERE ID IN \\(22,23\\);\")",
+      "Bash(curl -s -o /dev/null -w \"http://localhost/courier-dashboard/track/ -> %{http_code}\\\\n\" \"http://localhost/courier-dashboard/track/\")",
+      "Bash(curl -s -o /dev/null -w \"http://localhost/courier-dashboard/?page_id=22 -> %{http_code}\\\\n\" \"http://localhost/courier-dashboard/?page_id=22\")",
+      "Bash(\"/c/xampp/apache_start.bat\")",
+      "Bash(curl -s -o /dev/null -w \"dashboard home -> %{http_code}\\\\n\" \"http://localhost/courier-dashboard/\")",
+      "Bash(curl -s -o /dev/null -w \"meezab home -> %{http_code}\\\\n\" \"http://localhost/meezab/\")",
+      "Bash(curl -s -o /dev/null -w \"http://localhost/courier-dashboard/?page_id=23 -> %{http_code}\\\\n\" \"http://localhost/courier-dashboard/?page_id=23\")",
+      "Bash(\"/c/xampp/mysql/bin/mysql\" -u root -h 127.0.0.1 -P 3306 ns_courier -e \"SELECT ID, post_date, LENGTH\\(post_content\\) FROM wp_posts WHERE ID IN \\(22,23\\);\")",
+      "Skill(artifact-design)",
+      "Skill(artifact-design:*)",
+      "Bash(curl -s -o /dev/null -w \"HTTP %{http_code}\\\\n\" -u \"rzp_test_RpsFOCDQNkxhYH:BFBlaymLTQJsah7i2Y7IAF9M\" \"https://api.razorpay.com/v1/payments?count=1\")",
+      "Bash(curl -s -u \"rzp_test_RpsFOCDQNkxhYH:BFBlaymLTQJsah7i2Y7IAF9M\" \"https://api.razorpay.com/v1/payments?count=1\")",
+      "Bash(curl -s -w \"\\\\nHTTP %{http_code}\\\\n\" -u \"rzp_test_RpsFOCDQNkxhYH:BFBlaymLTQJsah7i2Y7IAF9M\" \"https://api.razorpay.com/v1/payments?count=1\")",
+      "Bash(curl -s -w \"\\\\nHTTP %{http_code}\\\\n\" -u \"rzp_test_TDKygK9ZYerUZy:XaAfOr469ar7nqMmJl0db7sS\" \"https://api.razorpay.com/v1/payments?count=1\")",
+      "Bash(\"/c/xampp/mysql/bin/mysql\" -u root -h 127.0.0.1 -P 3306 ns_courier -e \"SELECT COUNT\\(*\\) AS remaining FROM wp_posts WHERE post_type IN \\('shop_order','shop_order_placehold'\\);\")",
+      "Bash(rm -f \"/c/xampp/htdocs/courier-dashboard/wp-content/uploads/cc-labels/\"*.pdf)"
+    ],
+    "additionalDirectories": [
+      "C:\\xampp\\htdocs\\courier-dashboard\\wp-content\\uploads\\cc-labels"
     ]
   }
 }

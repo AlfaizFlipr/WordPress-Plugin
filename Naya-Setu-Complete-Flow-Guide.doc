@@ -1,0 +1,161 @@
+<html xmlns:o="urn:schemas-microsoft-com:office:office" xmlns:w="urn:schemas-microsoft-com:office:word" xmlns="http://www.w3.org/TR/REC-html40">
+<head>
+<meta charset="utf-8">
+<title>Naya Setu Courier — Complete Flow Guide</title>
+<!--[if gte mso 9]><xml><w:WordDocument><w:View>Print</w:View><w:Zoom>100</w:Zoom></w:WordDocument></xml><![endif]-->
+<style>
+body { font-family: Calibri, Arial, sans-serif; font-size: 11pt; color: #1a1a2e; margin: 40px; }
+h1 { font-size: 22pt; color: #0f3460; border-bottom: 3px solid #e94560; padding-bottom: 8px; }
+h2 { font-size: 16pt; color: #0f3460; margin-top: 28px; border-bottom: 1px solid #ccc; padding-bottom: 4px; }
+h3 { font-size: 13pt; color: #16213e; margin-top: 20px; }
+.step { background: #f0f4f8; border-left: 5px solid #0f3460; padding: 12px 16px; margin: 12px 0; }
+.step-title { font-weight: bold; font-size: 12pt; color: #0f3460; }
+.important { background: #fff3e0; border-left: 5px solid #ff9800; padding: 12px 16px; margin: 12px 0; }
+.success { background: #e8f5e9; border-left: 5px solid #4caf50; padding: 12px 16px; margin: 12px 0; }
+.danger { background: #ffebee; border-left: 5px solid #f44336; padding: 12px 16px; margin: 12px 0; }
+table { border-collapse: collapse; width: 100%; margin: 12px 0; }
+th { background: #0f3460; color: #fff; padding: 8px 10px; text-align: left; font-size: 10.5pt; }
+td { border: 1px solid #ccc; padding: 8px 10px; font-size: 10.5pt; vertical-align: top; }
+tr:nth-child(even) td { background: #f7f9fb; }
+code { font-family: Consolas, monospace; background: #eef1f5; padding: 1px 5px; font-size: 10pt; }
+.arrow { text-align: center; font-size: 16pt; color: #e94560; margin: 4px 0; }
+.flowbox { border: 2px solid #0f3460; padding: 10px 14px; margin: 6px auto; background: #fff; width: 85%; }
+.flowbox b { color: #0f3460; }
+.footer { margin-top: 40px; font-size: 9pt; color: #888; border-top: 1px solid #ccc; padding-top: 8px; }
+</style>
+</head>
+<body>
+
+<h1>🚚 Naya Setu Courier — Complete Flow Guide</h1>
+<p><b>Version:</b> 2.0 &nbsp;|&nbsp; <b>Date:</b> 16 July 2026 &nbsp;|&nbsp; <b>System:</b> Naya Setu Dashboard + Courier Connector Client Plugin</p>
+
+<div class="important">
+<b>Ek line me system samjho:</b> Naya Setu ek <b>courier service provider</b> hai. Client apni WooCommerce website pe sirf plugin lagata hai, 2 keys paste karta hai, aur apna <b>pickup address</b> set karta hai. Uske baad courier ka pura control (Delhivery ya DTDC, Manual ya Automatic) sirf <b>Naya Setu panel</b> ke paas hota hai — client ke paas nahi.
+</div>
+
+<h2>PART 1 — Client ko Connect Kaise Kare (Ek Baar Ka Setup)</h2>
+
+<div class="step">
+<div class="step-title">STEP 1: Naya Setu Panel me Keys Banao</div>
+<p><b>Kahan:</b> Naya Setu Dashboard → <b>Naya Setu → Clients</b> → "Add a client &amp; generate keys"</p>
+<ol>
+<li>Client / company ka <b>naam</b> dalo (e.g. "Fashion Store")</li>
+<li>Client ka <b>login email</b> dalo (optional — Client Portal account ban jata hai)</li>
+<li><b>Courier</b> choose karo — Delhivery ya DTDC (baad me kabhi bhi badal sakte ho)</li>
+<li><b>Booking Mode</b> choose karo:
+<ul>
+<li><b>Manual</b> — har order aap khud book karoge</li>
+<li><b>Automated</b> — order aate hi 2-3 second me AWB apne aap ban jayega</li>
+</ul></li>
+<li><b>[Generate API Key + Secret]</b> button dabao</li>
+</ol>
+<p>✅ Do keys milengi:</p>
+<table>
+<tr><th>Key</th><th>Format</th><th>Example</th></tr>
+<tr><td><b>API Key</b></td><td><code>cc1.xxxx.xxxx</code></td><td><code>cc1.aHR0cDovL2xvY2FsaG9zdC9....xxxxx</code></td></tr>
+<tr><td><b>Secret Key</b></td><td><code>ccs_xxxx</code></td><td><code>ccs_gYA2JHgcl2HtCXDZwW28....</code></td></tr>
+</table>
+<p>💡 <b>Khaas baat:</b> Dashboard ka URL API key ke <b>andar hi encoded</b> hota hai. Isliye client ko kabhi koi URL nahi dalna padta.</p>
+</div>
+
+<div class="arrow">⬇ Ye dono keys client ko de do (WhatsApp / email) ⬇</div>
+
+<div class="step">
+<div class="step-title">STEP 2: Client Apni Website Pe Keys Paste Kare</div>
+<p><b>Kahan:</b> Client ki WooCommerce site → <b>WooCommerce → Courier Connector</b></p>
+<ol>
+<li><b>API Key</b> paste karo</li>
+<li><b>Secret Key</b> paste karo</li>
+<li><b>[Connect to Naya Setu]</b> dabao</li>
+</ol>
+<div class="danger">❌ <b>Koi URL nahi dalna!</b> Plugin API key me se khud dashboard ka address nikaal leta hai aur automatic connect ho jata hai. Agar secret key galat hui to connection reject ho jayega (security check).</div>
+</div>
+
+<div class="arrow">⬇</div>
+
+<div class="step">
+<div class="step-title">STEP 3: Client Apna Pickup Address + Parcel Size Set Kare</div>
+<p><b>Kahan:</b> Usi page pe niche — <b>"Pickup Address &amp; Parcel"</b> section</p>
+<ol>
+<li>Pickup / business ka naam aur phone</li>
+<li>Pura address — address line, city, state, pincode</li>
+<li>Default parcel size — weight (kg), length × breadth × height (cm)</li>
+<li><b>[Save &amp; Sync to Naya Setu]</b> dabao</li>
+</ol>
+<div class="success">✅ Address turant Naya Setu panel pe pahunch jata hai (Clients page pe dikhta hai)<br>
+✅ Delhivery me warehouse bhi <b>apne aap register</b> ho jata hai<br>
+✅ Isi address se Naya Setu parcel <b>pickup</b> karega</div>
+<p>👉 <b>Isi liye</b> Naya Setu ki Settings me ab Pickup Address / Default Package ka option <b>nahi</b> hai — kyunki har client ka apna address hota hai, aur Naya Setu sirf service provider hai.</p>
+</div>
+
+<h2>PART 2 — Order Ka Flow (Har Order Pe Kya Hota Hai)</h2>
+
+<div class="flowbox"><b>1. CUSTOMER</b> — Client ki website pe order karta hai (COD ya Prepaid)</div>
+<div class="arrow">⬇</div>
+<div class="flowbox"><b>2. CLIENT PLUGIN (automatic)</b> — Order turant Naya Setu ko bhej deta hai: customer ka naam, address, phone, items, amount.<br>
+❌ Courier ka naam <b>nahi</b> bhejta — client ke paas ye choice hai hi nahi.</div>
+<div class="arrow">⬇</div>
+<div class="flowbox"><b>3. NAYA SETU DASHBOARD</b> — Dekhta hai is client ko kaunsa courier assign hai (Clients page ki setting):<br><br>
+<b>🔄 Mode = AUTOMATED:</b> AWB turant book ho jata hai (2-3 second me)<br>
+<b>✋ Mode = MANUAL:</b> Order "Pending" me aata hai → Orders page pe jaake <b>[Push]</b> dabao. Chaho to us ek order ke liye courier dropdown se change bhi kar sakte ho.</div>
+<div class="arrow">⬇</div>
+<div class="flowbox"><b>4. COURIER BOOKING (Delhivery / DTDC API)</b><br>
+• <b>Pickup address</b> = CLIENT ka address (jo usne plugin me set kiya) — yahan se parcel uthega<br>
+• <b>Delivery address</b> = CUSTOMER ka address — yahan parcel jayega<br>
+• <b>Parcel size</b> = client ka default size<br>
+✅ AWB number + Label PDF milta hai</div>
+<div class="arrow">⬇</div>
+<div class="flowbox"><b>5. REVERSE SYNC (automatic)</b> — AWB number, courier ka naam aur tracking link wapas client ki website pe chala jata hai. Order me note lag jata hai + "Track Shipment" button dikhta hai.</div>
+<div class="arrow">⬇</div>
+<div class="flowbox"><b>6. TRACKING (har 15 minute automatic)</b> — Delhivery aur DTDC dono ka live tracking. Status updates (In Transit, Out for Delivery, Delivered...) client ki website pe bhi sync hote hain.</div>
+
+<h2>PART 3 — Kaun Kya Karta Hai (Responsibility Table)</h2>
+
+<table>
+<tr><th>Kaun</th><th>Kya karta hai</th><th>Kya NAHI karta</th></tr>
+<tr>
+<td><b>Naya Setu Panel</b><br>(Admin)</td>
+<td>• Client add karta hai, API Key + Secret banata hai<br>• <b>Har client ke liye courier chunta hai</b> (Delhivery/DTDC)<br>• Manual ya Automated mode set karta hai<br>• Orders client-wise dekhta hai (store filter)<br>• Manual mode me orders Push karta hai<br>• Courier API credentials rakhta hai (Settings)</td>
+<td>• Pickup address set nahi karta (client karta hai)<br>• Parcel size set nahi karta</td>
+</tr>
+<tr>
+<td><b>Client Plugin</b><br>(WooCommerce store)</td>
+<td>• 2 keys paste karke connect hota hai<br>• <b>Apna pickup address + parcel size</b> set karta hai<br>• Orders automatic Naya Setu ko bhejta hai<br>• AWB aur tracking status receive karta hai</td>
+<td>• <b>Courier choose nahi kar sakta</b><br>• Koi URL nahi dalta<br>• Courier API keys nahi rakhta</td>
+</tr>
+<tr>
+<td><b>Courier</b><br>(Delhivery / DTDC)</td>
+<td>• Client ke pickup address se parcel uthata hai<br>• Customer ke address pe deliver karta hai<br>• Tracking updates deta hai</td>
+<td>—</td>
+</tr>
+</table>
+
+<h2>PART 4 — Extra Features</h2>
+
+<table>
+<tr><th>Feature</th><th>Detail</th></tr>
+<tr><td><b>New Keys (Regenerate)</b></td><td>Clients page pe har client ke saamne "New Keys" button — purani keys turant band, client ko nayi keys se dobara connect karna hoga. (Security ke liye — agar keys leak ho jayein.)</td></tr>
+<tr><td><b>Enable / Disable Client</b></td><td>Kisi client ko temporarily band karna ho to Disable dabao — uske orders aana band ho jayenge.</td></tr>
+<tr><td><b>Client Portal</b></td><td>Client ko login email do → wo apne shipments khud dekh sakta hai (sirf apne, dusre client ke nahi).</td></tr>
+<tr><td><b>Bulk Sync</b></td><td>Client plugin me "Sync recent orders" — purane orders ek saath bhejne ke liye.</td></tr>
+<tr><td><b>DTDC Live Tracking</b></td><td>✅ Working — tracking token configured hai, real scan history aati hai.</td></tr>
+<tr><td><b>Labels</b></td><td>Delhivery aur DTDC dono ke shipping label PDF dashboard se download hote hain.</td></tr>
+</table>
+
+<h2>PART 5 — Important Notes / Dhyan Rakhne Wali Baatein</h2>
+
+<div class="important">
+<ol>
+<li><b>DTDC account (IO1740) abhi Reverse-only hai</b> — normal "customer ko bhejo" (Forward) shipping ke liye DTDC se Forward service enable karwani padegi. Tab tak DTDC bookings sirf Reverse (customer se wapas merchant tak) chalengi, aur COD allowed nahi hai.</li>
+<li><b>Delhivery warehouse ka naam unique hota hai</b> — client jo "Pickup name" dalta hai wahi Delhivery me warehouse ban jata hai, automatic.</li>
+<li><b>Courier badalne ka asar sirf naye orders pe</b> hota hai — jo order pehle se book ho chuka hai (AWB ban gaya) wo usi courier se jayega.</li>
+<li><b>Keys kho jayein to</b> — Clients page pe "New Keys" dabao aur client ko nayi keys do.</li>
+</ol>
+</div>
+
+<div class="footer">
+Naya Setu Courier Connector v2.0 — Complete Flow Guide (Hinglish) — Generated 16 July 2026
+</div>
+
+</body>
+</html>

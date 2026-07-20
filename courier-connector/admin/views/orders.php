@@ -49,11 +49,10 @@ $base = admin_url('admin.php?page=cc-orders');
 		<select name="payment">
 			<option value="">All payments</option>
 			<option value="cod" <?php selected($filters['payment'], 'cod'); ?>>COD</option>
-			<option value="" disabled>──</option>
 		</select>
 
 		<select name="store">
-			<option value="0">All stores</option>
+			<option value="0">All clients</option>
 			<?php foreach ($stores as $s): ?>
 				<option value="<?php echo esc_attr($s->id); ?>" <?php selected($filters['store'], (int) $s->id); ?>>
 					<?php echo esc_html($s->store_name); ?></option>
@@ -73,7 +72,7 @@ $base = admin_url('admin.php?page=cc-orders');
 				<tr>
 					<th class="cc-col-check"><input type="checkbox" id="cc-check-all" /></th>
 					<th>Order</th>
-					<th>Store</th>
+					<th>Client</th>
 					<th>Customer</th>
 					<th>City</th>
 					<th>Amount</th>
@@ -113,7 +112,17 @@ $base = admin_url('admin.php?page=cc-orders');
 							<td><?php echo $o->is_cod() ? '<span class="cc-tag cc-tag-cod">COD</span>' : '<span class="cc-tag cc-tag-prepaid">Prepaid</span>'; ?>
 							</td>
 							<td><?php echo esc_html(wc_get_order_status_name($wc_order->get_status())); ?></td>
-							<td><?php echo cc_badge($o->get_ship_status(), $o->get_ship_status_label()); ?></td>
+							<td>
+								<?php echo cc_badge($o->get_ship_status(), $o->get_ship_status_label()); ?>
+								<?php
+								$push_error = (string) $wc_order->get_meta('_cc_push_error');
+								if ($push_error && !$awb):
+									?>
+									<div class="cc-push-error" title="<?php echo esc_attr($push_error); ?>">
+										⚠ <?php echo esc_html(mb_strimwidth($push_error, 0, 60, '…')); ?>
+									</div>
+								<?php endif; ?>
+							</td>
 							<td><?php echo $awb ? cc_courier_badge($wc_order->get_meta('_cc_courier')) : cc_courier_badge(CC_Shipment::resolve_courier($o), true); ?>
 							</td>
 							<td><?php echo $awb ? '<code>' . esc_html($awb) . '</code>' : '—'; ?></td>
