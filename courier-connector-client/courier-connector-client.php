@@ -1,4 +1,14 @@
 <?php
+/**
+ * Plugin Name: Naya Setu Courier Connector - Client
+ * Plugin URI: https://nayasetu.com
+ * Description: Connects a WooCommerce store to a Naya Setu Courier Connector dashboard so orders can be pushed for Delhivery/DTDC shipment booking and tracking.
+ * Version: 2.0.0
+ * Requires at least: 6.0
+ * Requires PHP: 7.4
+ * Author: Naya Setu
+ * Text Domain: courier-connector-client
+ */
 
 if (!defined('ABSPATH')) {
 	exit;

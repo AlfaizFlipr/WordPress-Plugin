@@ -1,4 +1,14 @@
 <?php
+/**
+ * Plugin Name: Naya Setu Courier Connector
+ * Plugin URI: https://nayasetu.com
+ * Description: Naya Setu multi-store courier dashboard — manage client stores, book shipments with Delhivery and DTDC, and track orders from one place.
+ * Version: 1.4.0
+ * Requires at least: 6.0
+ * Requires PHP: 7.4
+ * Author: Naya Setu
+ * Text Domain: courier-connector
+ */
 
 if (!defined('ABSPATH')) {
 	exit;
